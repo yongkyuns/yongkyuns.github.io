@@ -6,8 +6,8 @@ defaults:
       path: ""
       type: pages
     values:
-      layout: single
-      author_profile: false
+      layout: splash
+      author_profile: true
 ---
 
 This is about me. Not you!! LOL
