@@ -10,6 +10,6 @@ defaults:
       author_profile: true
 ---
 
-Hi! Thanks for dropping by :wave:.  
+Hi! Thanks for dropping by :wave: .  
 I'm an engineer
 
