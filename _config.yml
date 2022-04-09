@@ -103,14 +103,14 @@ analytics:
 # Site Author
 author:
   name             : "Yongkyun Shin"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "Hi! Thanks for dropping by."
+  avatar           : "/assets/images/teaser.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  bio              : "Engineer and father"
   location         : "Oakville, ON"
   email            : "yongkyuns@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      url: "mailto:yongkyuns@email.com"
+      # url: "mailto:yongkyuns@email.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
