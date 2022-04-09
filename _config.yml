@@ -104,7 +104,7 @@ analytics:
 author:
   name             : "Yongkyun Shin"
   avatar           : "/assets/images/profile.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "Engineer and entrepreteur"
+  bio              : "Engineer and entrepreteur. I love learning new things and making useful tools."
   location         : "Oakville, ON"
   email            : "yongkyuns@gmail.com"
   links:
