@@ -7,7 +7,7 @@ defaults:
       type: pages
     values:
       layout: single
-      author_profile: true
+      author_profile: false
 ---
 
 This is about me. Not you!! LOL
