@@ -2,11 +2,9 @@
 main:
   - title: "About"
     url: /about/
-  - title: "Blog"
-    url: /year-archive/
   - title: "Projects"
-    url: /collection-archive/
+    url: /projects/
   - title: "Work"
-    url: /collection-archive/
+    url: /work/
   - title: "Contact"
-    url: /sitemap/
+    url: /contact/
