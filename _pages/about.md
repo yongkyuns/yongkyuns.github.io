@@ -10,4 +10,6 @@ defaults:
       author_profile: true
 ---
 
-This is about me. Not you!! LOL
+Hi! Thanks for dropping by :wave:.  
+I'm an engineer
+
