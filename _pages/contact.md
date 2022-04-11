@@ -9,5 +9,3 @@ defaults:
       layout: splash
       author_profile: true
 ---
-
-Contact me through email.

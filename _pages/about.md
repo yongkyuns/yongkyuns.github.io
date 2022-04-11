@@ -10,6 +10,21 @@ defaults:
       author_profile: true
 ---
 
-Hi! Thanks for dropping by :smile:.  
-I'm an engineer
+Hi! Thanks for dropping by :wave:.   
+  
+I'm an engineer with love for building things and solving problems. 
+For most of my career, I've worked on solving robotics and controls
+problems in the automotive domain, ranging from early-stage research 
+to high-volume production software. I am quite good at identifying
+the root-cause of problems and implementing methods to address them, 
+whether they be technical, organizational or process-related. I have 
+a life-long passion for applying simulation and automation to improve 
+engineering efficiency. With ever-increasing complexity in today's
+software, and not enough experienced engineers to produce them, I try
+to institutionalize test-oriented culture to help engineers suceed in
+their jobs.
+
+These days, I'm interested in following my passion for entrepreneurship
+in software development to address important societal problems. If this 
+sounds interesting, please reach out anytime.
 
