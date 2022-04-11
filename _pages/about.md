@@ -26,5 +26,7 @@ their jobs.
 
 These days, I'm interested in following my passion for entrepreneurship
 in software development to address important societal problems. If this 
-sounds interesting, please reach out anytime.
+sounds interesting, please feel free to reach out. When not working,
+I enjoy spending time with my kids and watch them grow. Designing humans
+is full of faults, which makes it that much more enjoyable :wink:.
 
