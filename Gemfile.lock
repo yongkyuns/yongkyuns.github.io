@@ -278,7 +278,9 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
+  jekyll-gist
   jekyll-include-cache
+  jemoji
 
 BUNDLED WITH
    1.17.2
