@@ -10,7 +10,7 @@ defaults:
       author_profile: true
 ---
 
-Hi! Thanks for dropping by :wave:.   
+Hi! Thanks for dropping by :wave:  
   
 I'm an engineer with love for building things and solving problems. 
 For most of my career, I've worked on solving robotics and controls
@@ -28,5 +28,5 @@ These days, I'm interested in following my passion for entrepreneurship
 in software development to address important societal problems. If this 
 sounds interesting, please feel free to reach out. When not working,
 I enjoy spending time with my kids and watch them grow. Designing humans
-is full of faults, which makes it that much more enjoyable :wink:.
+is full of faults, which makes it that much more enjoyable :wink:
 
