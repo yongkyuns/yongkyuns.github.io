@@ -6,7 +6,7 @@ defaults:
       path: ""
       type: pages
     values:
-      layout: splash
+      layout: default
       author_profile: true
 ---
 
