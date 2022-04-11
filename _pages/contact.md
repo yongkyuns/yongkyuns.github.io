@@ -10,4 +10,4 @@ defaults:
       author_profile: true
 ---
 
-The best way to reach me is through email at yongkyuns@gmail.com.
+The best way to reach me is through email.

@@ -1,13 +1,10 @@
 ---
+title: Work
+layout: collection
 permalink: /work/
-defaults:
-  # _pages
-  - scope:
-      path: ""
-      type: pages
-    values:
-      layout: splash
-      author_profile: true
+collection: work
+entries_layout: grid
+classes: wide
 ---
 
-Some work-related stuff here.
+These are some projects I previously worked on.

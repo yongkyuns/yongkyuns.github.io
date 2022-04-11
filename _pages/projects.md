@@ -1,13 +1,10 @@
 ---
+title: Projects
+layout: collection
 permalink: /projects/
-defaults:
-  # _pages
-  - scope:
-      path: ""
-      type: pages
-    values:
-      layout: splash
-      author_profile: true
+collection: projects
+entries_layout: grid
+classes: wide
 ---
 
-Some personal projects here.
+These are some of my side-projects to help me experiment with ideas.
