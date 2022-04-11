@@ -6,7 +6,7 @@ defaults:
       path: ""
       type: pages
     values:
-      layout: default
+      layout: post
       author_profile: true
 ---
 
