@@ -1,8 +1,14 @@
 var store = [{
-        "title": "First Post",
-        "excerpt":"This is the first post.  Just learning to get around…  ","categories": [],
+        "title": "Starting Blog: A Learning Journal",
+        "excerpt":"Recently, I was going through lots of thoughts on what I would like to work on for the next 5 to 10 years, and began to realize a few things. Growing up, I was never the type of kid to keep a good record of my thoughts and ideas. In...","categories": [],
         "tags": [],
-        "url": "/first-post/",
+        "url": "/Starting-blog-A-Learning-Journal/",
+        "teaser": null
+      },{
+        "title": "How To Gradually Convince Your Team For A Change",
+        "excerpt":"Change is inevitable for an organization to grow and evolve. If an organization does not change much, there is a good chance that your organization is dysfunctional or unable to improve. However, change is also intrusive and uncomfortable by nature. When stakes are high, the most natural thing to do...","categories": [],
+        "tags": [],
+        "url": "/How-to-gradually-convince-your-team-for-a-change/",
         "teaser": null
       },{
         "title": "Noon",
