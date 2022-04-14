@@ -21,7 +21,7 @@ address them, whether they be technical, organizational or process-related.
 I have a life-long passion for applying simulation and automation to improve 
 engineering quality and efficiency. With ever-increasing complexity 
 in today's software, I try my best to contribute toward establishing
-test-oriented development culture to help engineering teams suceeed.
+test-oriented development culture to help engineering teams suceed.
 
 These days, I'm interested in following my passion for entrepreneurship
 in software development to address important societal problems. If this 
