@@ -23,6 +23,10 @@ engineering quality and efficiency. With ever-increasing complexity
 in today's software, I try my best to contribute toward establishing
 test-oriented development culture to help engineering teams suceed.
 
+When not working, I enjoy spending time with my kids and watching 
+them grow. Designing humans is full of faults, which makes it that much 
+more enjoyable :wink:
+
 <!-- These days, I'm interested in following my passion for entrepreneurship
 in software development to address important societal problems. If this 
 sounds interesting, please feel free to reach out. When not working,
