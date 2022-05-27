@@ -10,6 +10,8 @@ defaults:
       author_profile: true
 ---
 
+Temporary text.
+
 Hi! Thanks for dropping by :wave:  
   
 I'm an engineer with love for building things and solving problems. 
