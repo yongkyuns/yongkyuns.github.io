@@ -8,6 +8,8 @@ header:
 
 ![Noon](/assets/images/projects/noon_mini.png)
 
+[Go to egui](https://yongkyuns.github.io/egui_demo) 
+
 [Noon](https://github.com/yongkyuns/noon) is a Rust library for 
 generating 2D animations with simple declarative-style commands.  
 
