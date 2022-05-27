@@ -10,8 +10,6 @@ defaults:
       author_profile: true
 ---
 
-Temporary text.
-
 Hi! Thanks for dropping by :wave:  
   
 I'm an engineer with love for building things and solving problems. 
@@ -29,9 +27,4 @@ When not working, I enjoy spending time with my kids and watching
 them grow. Designing humans is full of faults, which makes it that much 
 more enjoyable :wink:
 
-<!-- These days, I'm interested in following my passion for entrepreneurship
-in software development to address important societal problems. If this 
-sounds interesting, please feel free to reach out. When not working,
-I enjoy spending time with my kids and watching them grow. Designing 
-humans is full of faults, which makes it that much more enjoyable :wink: -->
 
