@@ -49,17 +49,20 @@
         overflow: hidden;
         margin: 0 !important;
         padding: 0 !important;
+        height: 100%;
+        width: 100%;
       }
 
-      /* Position canvas in center-top: */
+      /* Canvas fills viewport - matches official eframe template */
       canvas {
         margin-right: auto;
         margin-left: auto;
         display: block;
         position: absolute;
-        top: 0%;
-        left: 50%;
-        transform: translate(-50%, 0%);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
       }
 
       .centered {
@@ -136,19 +139,30 @@
       // We'll defer our execution until the wasm is ready to go.
       // Here we tell bindgen the path to the wasm file so it can start
       // initialization and return to us a promise when it's done.
-      console.debug("loading wasm…");
-      wasm_bindgen("./rust_robotics_sim_bg.wasm")
+      console.log("=== SCRIPT START ===");
+      console.log("loading wasm…");
+      wasm_bindgen({ module_or_path: "./rust_robotics_sim_bg.wasm" })
         .then(on_wasm_loaded)
         .catch(on_wasm_error);
 
-      function on_wasm_loaded() {
-        console.debug("wasm loaded. starting app…");
+      async function on_wasm_loaded() {
+        console.log("=== WASM LOADED ===");
 
-        // This call installs a bunch of callbacks and then returns:
-        wasm_bindgen.start("the_canvas_id");
+        const canvas = document.getElementById("the_canvas_id");
+        console.log("Canvas before start:", canvas.width, "x", canvas.height);
+        console.log("Canvas clientSize:", canvas.clientWidth, "x", canvas.clientHeight);
 
-        console.debug("app started.");
-        document.getElementById("center_text").remove();
+        try {
+          console.log("=== STARTING APP ===");
+          await wasm_bindgen.start("the_canvas_id");
+          console.log("=== APP STARTED ===");
+          console.log("Canvas after start:", canvas.width, "x", canvas.height);
+
+          document.getElementById("center_text").remove();
+        } catch (e) {
+          console.error("Error starting app:", e);
+          on_wasm_error(e);
+        }
       }
 
       function on_wasm_error(error) {
@@ -166,11 +180,14 @@
       }
     </script>
 
-    <!--Register Service Worker-->
+    <!-- Unregister any stale service workers -->
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
-          navigator.serviceWorker.register("/sw.js");
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          for (let registration of registrations) {
+            registration.unregister();
+            console.log("Unregistered stale service worker");
+          }
         });
       }
     </script>
