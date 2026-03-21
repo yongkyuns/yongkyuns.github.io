@@ -142,9 +142,9 @@
         return rustRoboticsBrowserRuntimePromise;
       }
 
-      window.rustRoboticsOrtSmokeTest = async function (modelBytes, wasmBasePath) {
+      window.rustRoboticsOrtSmokeTest = async function (modelBytes, wasmBasePath, config) {
         const runtime = await getRustRoboticsBrowserRuntime();
-        return runtime.rustRoboticsOrtSmokeTest(modelBytes, wasmBasePath);
+        return runtime.rustRoboticsOrtSmokeTest(modelBytes, wasmBasePath, config);
       };
 
       window.rustRoboticsMujocoInit = async function (
@@ -164,9 +164,19 @@
         );
       };
 
-      window.rustRoboticsMujocoStep = async function (stepCount, commandVelX) {
+      window.rustRoboticsMujocoStep = async function (
+        stepCount,
+        commandVelX,
+        commandVelY,
+        useSetpointBall,
+      ) {
         const runtime = await getRustRoboticsBrowserRuntime();
-        return runtime.rustRoboticsMujocoStep(stepCount, commandVelX);
+        return runtime.rustRoboticsMujocoStep(
+          stepCount,
+          commandVelX,
+          commandVelY,
+          useSetpointBall,
+        );
       };
 
       window.rustRoboticsMujocoConfigureViewport = function (config) {
@@ -184,6 +194,15 @@
         }
         getRustRoboticsBrowserRuntime().then((runtime) => {
           runtime.rustRoboticsMujocoResetViewportCamera();
+        });
+      };
+
+      window.rustRoboticsMujocoReset = function () {
+        if (!rustRoboticsBrowserRuntimePromise) {
+          return;
+        }
+        getRustRoboticsBrowserRuntime().then((runtime) => {
+          runtime.rustRoboticsMujocoReset();
         });
       };
     </script>

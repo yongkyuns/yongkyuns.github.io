@@ -1,0 +1,16 @@
+{
+  "controller_kind": "open_duck_mini_walk",
+  "command_mode": "velocity",
+  "onnx": {
+    "path": "./BEST_WALK_ONNX.onnx",
+    "meta": {
+      "in_keys": ["obs"],
+      "in_shapes": [[[1, 101]]],
+      "out_keys": ["continuous_actions"]
+    }
+  },
+  "action_scale": 0.25,
+  "stiffness": 13.37,
+  "damping": 0.0,
+  "phase_steps": 27
+}
