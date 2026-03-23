@@ -11,7 +11,7 @@ function ensureRustRoboticsOrtLoaded() {
   if (!rustRoboticsOrtLoadPromise) {
     rustRoboticsOrtLoadPromise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "vendor/onnxruntime-web/dist/ort.wasm.min.js";
+      script.src = "ort/ort.wasm.min.js";
       script.async = true;
       script.onload = () => {
         if (globalThis.ort) {
