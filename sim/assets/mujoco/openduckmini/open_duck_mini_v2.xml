@@ -6,7 +6,7 @@
   <option iterations="1" ls_iterations="5">
     <flag eulerdamp="disable"/>
   </option>
-  <compiler angle="radian" meshdir="../assets"/>
+  <compiler angle="radian" meshdir="assets"/>
 
   <!-- <option noslip_iterations="1"/>
   <compiler angle="radian" meshdir="assets" autolimits="true"/> -->

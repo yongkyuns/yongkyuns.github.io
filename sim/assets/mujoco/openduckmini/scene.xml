@@ -1,6 +1,6 @@
 <mujoco model="open_duck_mini_v2_scene">
 	<!-- Compiler settings - must be set before include for proper mesh path resolution -->
-	<compiler angle="radian" meshdir="../assets"/>
+	<compiler angle="radian" meshdir="assets"/>
 
 	<!-- Include the robot model from Playground -->
 	<include file="open_duck_mini_v2.xml"/>
