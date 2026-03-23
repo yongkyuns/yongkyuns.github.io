@@ -1,5 +1,5 @@
-import { initRuntime } from './snippets/ort-web-c7b42e3e9fb58316/_loader.js';
-import { trackSessionInit } from './snippets/ort-web-c7b42e3e9fb58316/_telemetry.js';
+import { initRuntime } from './snippets/ort-web-c7b42e3e9fb58316/loader.js';
+import { trackSessionInit } from './snippets/ort-web-c7b42e3e9fb58316/telemetry.js';
 
 /**
  * @param {any} config
