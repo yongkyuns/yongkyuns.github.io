@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Introducing Rust Robotics" href="2026/introduction.html"><link rel="prev" title="Project Overview" href="../overview.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Localization Tutorial" href="localization.html"><link rel="prev" title="Tutorials" href="index.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>Blog - Rust Robotics documentation</title>
+        <title>Control Systems Tutorial - Rust Robotics documentation</title>
       <link rel="stylesheet" type="text/css" href="static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="static/sphinx-design.min.css?v=95c83b7e" />
@@ -174,7 +174,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -194,16 +194,16 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Project Overview</a></li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Blog</a><input aria-label="Toggle navigation of Blog" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="2026/introduction.html">Introducing Rust Robotics</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../blog/index.html">Blog</a><input aria-label="Toggle navigation of Blog" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blog/2026/introduction.html">Introducing Rust Robotics</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/pendulum.html">Control Systems Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/localization.html">Localization Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/path_planning.html">Path Planning Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/slam.html">SLAM Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/robot.html">Robot Tutorial</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Control Systems Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="localization.html">Localization Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="path_planning.html">Path Planning Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slam.html">SLAM Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robot.html">Robot Tutorial</a></li>
 </ul>
 </li>
 </ul>
@@ -226,12 +226,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/blob/master/site_docs/blog/index.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/blob/master/site_docs/tutorials/pendulum.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/edit/master/site_docs/blog/index.md" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/edit/master/site_docs/tutorials/pendulum.md" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -243,31 +243,157 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section class="tex2jax_ignore mathjax_ignore" id="blog">
-<h1>Blog<a class="headerlink" href="#blog" title="Link to this heading">¶</a></h1>
-<p>Project notes, architecture writeups, and implementation essays.</p>
-<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
-<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-1 sd-row-cols-lg-1 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm article-card docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-Introducing Rust Robotics</div>
-<p class="sd-card-text">The first long-form overview of the repo: what the workspace is for, how the
-crates divide responsibility, and why the project is structured the way it is.</p>
-<p class="sd-card-text"><a class="reference internal" href="2026/introduction.html"><span class="doc">Introducing Rust Robotics</span></a></p>
+          <section class="tex2jax_ignore mathjax_ignore" id="control-systems-tutorial">
+<h1>Control Systems Tutorial<a class="headerlink" href="#control-systems-tutorial" title="Link to this heading">¶</a></h1>
+<p>The inverted-pendulum simulator is the control tutorial in this repo. It is
+small enough to derive by hand, but rich enough to compare classical and learned
+controllers under one shared plant.</p>
+<div class="sim-embed-card">
+  <iframe
+    class="sim-embed-frame"
+    data-sim-mode="inverted_pendulum"
+    data-sim-path="?mode=inverted_pendulum&embed=focused&ui=20260416w"
+    title="Rust Robotics control systems simulator"
+    loading="lazy"
+  ></iframe>
+</div><section id="the-plant">
+<h2>The plant<a class="headerlink" href="#the-plant" title="Link to this heading">¶</a></h2>
+<p>The state is the familiar cart-pole state:</p>
+<ul class="simple">
+<li><p>cart position <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
+<li><p>cart velocity <code class="docutils literal notranslate"><span class="pre">\dot{x}</span></code></p></li>
+<li><p>pole angle <code class="docutils literal notranslate"><span class="pre">\theta</span></code></p></li>
+<li><p>pole angular velocity <code class="docutils literal notranslate"><span class="pre">\dot{\theta}</span></code></p></li>
+</ul>
+<p>The control input is the horizontal force applied to the cart. Around the
+upright equilibrium, the nonlinear dynamics can be linearized into the standard
+state-space form:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\dot{\mathbf{x}} = A\mathbf{x} + B\mathbf{u}
+\]</div>
 </div>
+<p>That local linear model is what makes LQR and the terminal-cost approximation
+inside MPC practical for this demo.</p>
+</section>
+<section id="controllers-in-this-page">
+<h2>Controllers in this page<a class="headerlink" href="#controllers-in-this-page" title="Link to this heading">¶</a></h2>
+<p>The simulator lets you compare several controllers on the same plant:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PID</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LQR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MPC</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PPO</span> <span class="pre">Policy</span></code></p></li>
+</ul>
+<p>Each one answers the same question differently: how should force be chosen from
+the current state to keep the pole upright while keeping the cart motion under
+control?</p>
+</section>
+<section id="theoretical-derivations">
+<h2>Theoretical derivations<a class="headerlink" href="#theoretical-derivations" title="Link to this heading">¶</a></h2>
+<section id="pid">
+<h3>PID<a class="headerlink" href="#pid" title="Link to this heading">¶</a></h3>
+<p>PID treats control as weighted error feedback:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+u(t) = K_p e(t) + K_i \int e(t)\,dt + K_d \frac{de(t)}{dt}
+\]</div>
 </div>
+<p>In discrete time, the implementation approximates the derivative from finite
+differences and accumulates the integral term numerically. PID is useful here as
+a baseline because it is intuitive and tunable, but it does not explicitly
+reason about the coupled multivariable pendulum dynamics.</p>
+</section>
+<section id="lqr">
+<h3>LQR<a class="headerlink" href="#lqr" title="Link to this heading">¶</a></h3>
+<p>LQR chooses a feedback gain <code class="docutils literal notranslate"><span class="pre">K</span></code> that minimizes a quadratic cost:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+J = \sum_{k=0}^{\infty} \left(x_k^T Q x_k + u_k^T R u_k\right)
+\]</div>
 </div>
+<p>The solution comes from the Riccati equation. Once the stabilizing matrix <code class="docutils literal notranslate"><span class="pre">P</span></code> is
+found, the optimal linear feedback is:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+u_k = -K x_k
+\]</div>
 </div>
+<p>with <code class="docutils literal notranslate"><span class="pre">K</span></code> derived from <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">Q</span></code>, <code class="docutils literal notranslate"><span class="pre">R</span></code>, and <code class="docutils literal notranslate"><span class="pre">P</span></code>. The important point is that
+LQR does not tune angle and cart motion separately; it optimizes them together
+through the state cost.</p>
+</section>
+<section id="mpc">
+<h3>MPC<a class="headerlink" href="#mpc" title="Link to this heading">¶</a></h3>
+<p>MPC solves a finite-horizon optimization problem online:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\min_{\{x_k, u_k\}} \sum_{k=0}^{N-1} \left(x_k^T Q x_k + u_k^T R u_k\right) + x_N^T P x_N
+\]</div>
 </div>
-<div class="toctree-wrapper compound">
+<p>subject to the dynamics and any input/state constraints. Only the first control
+action is applied, then the optimization is solved again at the next step.</p>
+<p>That is why MPC typically looks more deliberate: it is explicitly planning a
+short future sequence rather than reacting with one static feedback law.</p>
+</section>
+<section id="ppo-policy">
+<h3>PPO policy<a class="headerlink" href="#ppo-policy" title="Link to this heading">¶</a></h3>
+<p>The learned policy replaces an analytical control law with a neural mapping from
+observation to action. Training still optimizes a control objective, but the
+gradient comes from PPO’s clipped surrogate loss instead of a Riccati or QP
+solve.</p>
+<p>Conceptually, PPO is learning a feedback policy:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+u = \pi_{\theta}(o)
+\]</div>
 </div>
+<p>where <code class="docutils literal notranslate"><span class="pre">o</span></code> is the observation built by the simulator and <code class="docutils literal notranslate"><span class="pre">\theta</span></code> are the policy
+parameters exported as a portable <code class="docutils literal notranslate"><span class="pre">PolicySnapshot</span></code>.</p>
+</section>
+</section>
+<section id="what-to-look-at">
+<h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>the cart position and pole angle together, not just one variable in isolation</p></li>
+<li><p>how quickly the controller damps oscillation after a disturbance</p></li>
+<li><p>whether the controller settles smoothly or keeps injecting small corrections</p></li>
+<li><p>how the learned PPO policy behaves relative to the model-based controllers</p></li>
+</ul>
+</section>
+<section id="try-this">
+<h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Start with <code class="docutils literal notranslate"><span class="pre">LQR</span></code> and use it as the baseline for smooth stabilization.</p></li>
+<li><p>Switch to <code class="docutils literal notranslate"><span class="pre">PID</span></code> and change gains until you see overshoot or sluggish recovery.</p></li>
+<li><p>Switch to <code class="docutils literal notranslate"><span class="pre">MPC</span></code> and notice the more deliberate control behavior.</p></li>
+<li><p>Select <code class="docutils literal notranslate"><span class="pre">PPO</span> <span class="pre">Policy</span></code> and compare its recovery pattern to the analytical controllers.</p></li>
+<li><p>Add noise and restart to see which controller is most sensitive to sensing error.</p></li>
+</ol>
+</section>
+<section id="implementation-mapping">
+<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
+<p>The pendulum path is intentionally structured across crates:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code> owns the classical controller logic</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code> owns PPO training</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code> owns portable <code class="docutils literal notranslate"><span class="pre">PolicySnapshot</span></code> handoff data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> owns the plant, stepping, UI, and controller selection</p></li>
+</ul>
+<p>So the same plant can be stabilized either by analytical control laws or by a
+policy snapshot exported from training, while the simulator itself stays fixed.</p>
+</section>
 </section>
 
         </article>
@@ -275,23 +401,23 @@ crates divide responsibility, and why the project is structured the way it is.</
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="2026/introduction.html">
+          <a class="next-page" href="localization.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Introducing Rust Robotics</div>
+                <div class="title">Localization Tutorial</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../overview.html">
+          <a class="prev-page" href="index.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Project Overview</div>
+                <div class="title">Tutorials</div>
                 
               </div>
             </a>
@@ -313,8 +439,38 @@ crates divide responsibility, and why the project is structured the way it is.</
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Control Systems Tutorial</a><ul>
+<li><a class="reference internal" href="#the-plant">The plant</a></li>
+<li><a class="reference internal" href="#controllers-in-this-page">Controllers in this page</a></li>
+<li><a class="reference internal" href="#theoretical-derivations">Theoretical derivations</a><ul>
+<li><a class="reference internal" href="#pid">PID</a></li>
+<li><a class="reference internal" href="#lqr">LQR</a></li>
+<li><a class="reference internal" href="#mpc">MPC</a></li>
+<li><a class="reference internal" href="#ppo-policy">PPO policy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a></li>
+<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -324,6 +480,8 @@ crates divide responsibility, and why the project is structured the way it is.</
     <script src="static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="static/scripts/furo.js?v=46bd48cc"></script>
     <script src="static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="static/sim_embed.js?v=053a2c41"></script>
     </body>
 </html>

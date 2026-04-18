@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Introducing Rust Robotics" href="2026/introduction.html"><link rel="prev" title="Project Overview" href="../overview.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="SLAM Tutorial" href="slam.html"><link rel="prev" title="Localization Tutorial" href="localization.html">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
-        <title>Blog - Rust Robotics documentation</title>
+        <title>Path Planning Tutorial - Rust Robotics documentation</title>
       <link rel="stylesheet" type="text/css" href="static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="static/sphinx-design.min.css?v=95c83b7e" />
@@ -174,7 +174,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -194,16 +194,16 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Project Overview</a></li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Blog</a><input aria-label="Toggle navigation of Blog" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="2026/introduction.html">Introducing Rust Robotics</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../blog/index.html">Blog</a><input aria-label="Toggle navigation of Blog" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blog/2026/introduction.html">Introducing Rust Robotics</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/pendulum.html">Control Systems Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/localization.html">Localization Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/path_planning.html">Path Planning Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/slam.html">SLAM Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/robot.html">Robot Tutorial</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Tutorials</a><input aria-label="Toggle navigation of Tutorials" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pendulum.html">Control Systems Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="localization.html">Localization Tutorial</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Path Planning Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slam.html">SLAM Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robot.html">Robot Tutorial</a></li>
 </ul>
 </li>
 </ul>
@@ -226,12 +226,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/blob/master/site_docs/blog/index.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/blob/master/site_docs/tutorials/path_planning.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/edit/master/site_docs/blog/index.md" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/yongkyuns/RustRobotics/edit/master/site_docs/tutorials/path_planning.md" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -243,31 +243,93 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section class="tex2jax_ignore mathjax_ignore" id="blog">
-<h1>Blog<a class="headerlink" href="#blog" title="Link to this heading">¶</a></h1>
-<p>Project notes, architecture writeups, and implementation essays.</p>
-<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
-<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-1 sd-row-cols-lg-1 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm article-card docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-Introducing Rust Robotics</div>
-<p class="sd-card-text">The first long-form overview of the repo: what the workspace is for, how the
-crates divide responsibility, and why the project is structured the way it is.</p>
-<p class="sd-card-text"><a class="reference internal" href="2026/introduction.html"><span class="doc">Introducing Rust Robotics</span></a></p>
+          <section class="tex2jax_ignore mathjax_ignore" id="path-planning-tutorial">
+<h1>Path Planning Tutorial<a class="headerlink" href="#path-planning-tutorial" title="Link to this heading">¶</a></h1>
+<p>The path-planning demo is the easiest place to compare search behavior across
+different environments and algorithm assumptions.</p>
+<div class="sim-embed-card">
+  <iframe
+    class="sim-embed-frame"
+    data-sim-mode="path_planning"
+    data-sim-path="?mode=path_planning&embed=focused&ui=20260416b"
+    title="Rust Robotics path planning simulator"
+    loading="lazy"
+  ></iframe>
+</div><section id="the-planning-problem">
+<h2>The planning problem<a class="headerlink" href="#the-planning-problem" title="Link to this heading">¶</a></h2>
+<p>Path planning is an optimization problem over feasible trajectories. In the
+simplest discrete case, the planner is minimizing cumulative cost from a start
+node to a goal node while respecting obstacle constraints.</p>
+</section>
+<section id="theoretical-derivations">
+<h2>Theoretical derivations<a class="headerlink" href="#theoretical-derivations" title="Link to this heading">¶</a></h2>
+<section id="dijkstra-and-a">
+<h3>Dijkstra and A*<a class="headerlink" href="#dijkstra-and-a" title="Link to this heading">¶</a></h3>
+<p>Dijkstra expands nodes in order of path cost <code class="docutils literal notranslate"><span class="pre">g(n)</span></code>. A* adds a heuristic
+estimate <code class="docutils literal notranslate"><span class="pre">h(n)</span></code> and ranks candidates by:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+f(n) = g(n) + h(n)
+\]</div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="toctree-wrapper compound">
-</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">h(n)</span></code> is admissible, A* preserves optimality while usually exploring fewer
+states than Dijkstra.</p>
+</section>
+<section id="theta">
+<h3>Theta*<a class="headerlink" href="#theta" title="Link to this heading">¶</a></h3>
+<p>Theta* keeps the A* search structure but allows line-of-sight shortcuts between
+parents and descendants. The effect is that the solution path can become less
+“grid stair-stepped” without abandoning the graph-search framing.</p>
+</section>
+<section id="rrt">
+<h3>RRT<a class="headerlink" href="#rrt" title="Link to this heading">¶</a></h3>
+<p>RRT changes the problem entirely. Instead of exhaustively expanding a structured
+graph, it samples free space, connects toward samples, and grows a tree. It is
+useful when the search space is continuous or the environment is awkward for a
+uniform grid representation.</p>
+</section>
+</section>
+<section id="what-this-simulator-is-for">
+<h2>What this simulator is for<a class="headerlink" href="#what-this-simulator-is-for" title="Link to this heading">¶</a></h2>
+<p>It is useful for comparing:</p>
+<ul class="simple">
+<li><p>graph-based vs continuous planning</p></li>
+<li><p>obstacle-density sensitivity</p></li>
+<li><p>resolution tradeoffs</p></li>
+<li><p>path quality vs search effort</p></li>
+</ul>
+</section>
+<section id="what-to-look-at">
+<h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>whether the path hugs obstacles or keeps useful clearance</p></li>
+<li><p>how path shape changes when you switch environment representation</p></li>
+<li><p>how grid resolution affects both path quality and search complexity</p></li>
+<li><p>which algorithms recover gracefully when the scene gets cluttered</p></li>
+</ul>
+</section>
+<section id="try-this">
+<h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Start with a sparse map and compare the shortest path to the smoothest path.</p></li>
+<li><p>Increase obstacle density and look for search patterns that degrade first.</p></li>
+<li><p>Change environment mode and compare how the same start/goal pair behaves.</p></li>
+<li><p>Add another planner instance to compare results side by side.</p></li>
+</ol>
+</section>
+<section id="implementation-mapping">
+<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
+<p>The planner implementations live in <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, but the multi-planner
+coordination, scene editing, and synchronized simulator controls live in
+<code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code>. That keeps the algorithms reusable while still letting the
+app act as a comparison harness.</p>
+</section>
 </section>
 
         </article>
@@ -275,23 +337,23 @@ crates divide responsibility, and why the project is structured the way it is.</
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="2026/introduction.html">
+          <a class="next-page" href="slam.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Introducing Rust Robotics</div>
+                <div class="title">SLAM Tutorial</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../overview.html">
+          <a class="prev-page" href="localization.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Project Overview</div>
+                <div class="title">Localization Tutorial</div>
                 
               </div>
             </a>
@@ -313,8 +375,37 @@ crates divide responsibility, and why the project is structured the way it is.</
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Path Planning Tutorial</a><ul>
+<li><a class="reference internal" href="#the-planning-problem">The planning problem</a></li>
+<li><a class="reference internal" href="#theoretical-derivations">Theoretical derivations</a><ul>
+<li><a class="reference internal" href="#dijkstra-and-a">Dijkstra and A*</a></li>
+<li><a class="reference internal" href="#theta">Theta*</a></li>
+<li><a class="reference internal" href="#rrt">RRT</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-this-simulator-is-for">What this simulator is for</a></li>
+<li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a></li>
+<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -324,6 +415,8 @@ crates divide responsibility, and why the project is structured the way it is.</
     <script src="static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="static/scripts/furo.js?v=46bd48cc"></script>
     <script src="static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="static/sim_embed.js?v=053a2c41"></script>
     </body>
 </html>
