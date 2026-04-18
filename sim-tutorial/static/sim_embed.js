@@ -6,7 +6,7 @@ function resolvedSimBase() {
   const params = new URLSearchParams(window.location.search);
   const explicit = params.get("sim_base");
   if (explicit) {
-    return explicit;
+    return new URL(explicit, window.location.href).toString();
   }
 
   const host = window.location.hostname;
@@ -14,7 +14,7 @@ function resolvedSimBase() {
     return "http://127.0.0.1:3000/";
   }
 
-  return "/sim/";
+  return new URL("/sim/", window.location.href).toString();
 }
 
 function ensureFrameSrc(frame) {
