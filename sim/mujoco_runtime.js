@@ -1651,7 +1651,7 @@ function isPointerOnCommandBall(overlay, event, runtime) {
 }
 
 function updateCommandSetpointFromPointer(overlay, event, runtime) {
-  const hit = intersectPointerWithGround(overlay, event.clientX, event.clientY, COMMAND_BALL_HEIGHT);
+  const hit = intersectPointerWithGround(overlay, event.clientX, event.clientY, COMMAND_GROUND_PLANE_Z);
   if (!hit) {
     return;
   }
@@ -1703,7 +1703,7 @@ function updateCommandSetpointFromDragRay(overlay, event, runtime) {
     overlay,
     event.clientX,
     event.clientY,
-    COMMAND_BALL_HEIGHT,
+    COMMAND_GROUND_PLANE_Z,
   );
   if (!point) {
     return;
@@ -2049,8 +2049,9 @@ const IDENTITY_MAT3 = new Float32Array([
 ]);
 const WHITE_TINT = new Float32Array([1.0, 1.0, 1.0, 1.0]);
 const WHITE_COLOR = [1.0, 1.0, 1.0, 1.0];
-const COMMAND_BALL_HEIGHT = 0.05;
-const COMMAND_BALL_RADIUS = 0.06;
+const COMMAND_BALL_RADIUS = 0.05;
+const COMMAND_BALL_HEIGHT = COMMAND_BALL_RADIUS;
+const COMMAND_GROUND_PLANE_Z = COMMAND_BALL_HEIGHT;
 const MAX_COMMAND_SPEED = 2.0;
 
 const OVERLAY_VERTEX_SHADER = `#version 300 es

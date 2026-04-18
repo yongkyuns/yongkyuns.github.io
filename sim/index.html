@@ -35,6 +35,75 @@
         background: #909090;
       }
 
+      html.embedded-theme-light body {
+        background: #efeae3;
+      }
+
+      html.embedded-theme-dark body {
+        background: #11151c;
+      }
+
+      html.embedded-focused:not(.embedded-pendulum-dom):not(.embedded-path-planning-dom):not(.embedded-localization-dom):not(.embedded-slam-dom):not(.embedded-robot-dom),
+      html.embedded-focused:not(.embedded-pendulum-dom):not(.embedded-path-planning-dom):not(.embedded-localization-dom):not(.embedded-slam-dom):not(.embedded-robot-dom) body {
+        background: transparent;
+      }
+
+      html.embedded-pendulum-dom,
+      html.embedded-pendulum-dom body,
+      html.embedded-path-planning-dom,
+      html.embedded-path-planning-dom body,
+      html.embedded-localization-dom,
+      html.embedded-localization-dom body,
+      html.embedded-slam-dom,
+      html.embedded-slam-dom body,
+      html.embedded-robot-dom,
+      html.embedded-robot-dom body {
+        overflow: visible;
+      }
+
+      html.embedded-pendulum-dom body,
+      html.embedded-path-planning-dom body,
+      html.embedded-localization-dom body,
+      html.embedded-slam-dom body,
+      html.embedded-robot-dom body {
+        --embed-accent: #e67a4c;
+        --embed-accent-soft: #c6613b;
+        --embed-panel: #11151c;
+        --embed-panel-alt: #181d26;
+        --embed-panel-strong: #1f2530;
+        --embed-panel-hover: #2a3240;
+        --embed-text: #e9eef5;
+        --embed-text-muted: #99a5b4;
+        --embed-border: #3a4554;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px !important;
+        box-sizing: border-box;
+        height: auto;
+        min-height: 100%;
+      }
+
+      html.embedded-theme-light.embedded-pendulum-dom body,
+      html.embedded-theme-light.embedded-path-planning-dom body,
+      html.embedded-theme-light.embedded-localization-dom body,
+      html.embedded-theme-light.embedded-slam-dom body,
+      html.embedded-theme-light.embedded-robot-dom body {
+        --embed-accent: #e67a4c;
+        --embed-accent-soft: #c6613b;
+        --embed-panel: #f7f4f0;
+        --embed-panel-alt: #efeae3;
+        --embed-panel-strong: #e5ded5;
+        --embed-panel-hover: #ebe2d8;
+        --embed-text: #2b313b;
+        --embed-text-muted: #6f7884;
+        --embed-border: #bfb2a5;
+      }
+
+      html.embedded-pendulum-dom.embedded-pendulum-graph body {
+        padding-bottom: 18px !important;
+      }
+
       @media (prefers-color-scheme: dark) {
         body {
           /* Dark mode background color for what is not covered by the egui canvas,
@@ -63,6 +132,588 @@
         left: 0;
         width: 100%;
         height: 100%;
+      }
+
+      html.embedded-pendulum-dom .canvas-shell,
+      html.embedded-path-planning-dom .canvas-shell,
+      html.embedded-localization-dom .canvas-shell,
+      html.embedded-slam-dom .canvas-shell,
+      html.embedded-robot-dom .canvas-shell {
+        position: relative;
+        order: 1;
+        flex: 0 0 auto;
+        width: 100%;
+        background: var(--embed-panel);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      html.embedded-pendulum-dom .canvas-shell {
+        aspect-ratio: 16 / 9;
+        min-height: 280px;
+        max-height: 420px;
+      }
+
+      html.embedded-path-planning-dom .canvas-shell {
+        aspect-ratio: 1 / 1;
+        min-height: 360px;
+        max-height: 620px;
+      }
+
+      html.embedded-localization-dom .canvas-shell {
+        aspect-ratio: 4 / 3;
+        min-height: 340px;
+        max-height: 560px;
+      }
+
+      html.embedded-slam-dom .canvas-shell {
+        aspect-ratio: 1 / 1;
+        min-height: 360px;
+        max-height: 620px;
+      }
+
+      html.embedded-robot-dom .canvas-shell {
+        aspect-ratio: 23 / 10;
+        min-height: 480px;
+        max-height: 680px;
+      }
+
+      html.embedded-pendulum-dom.embedded-pendulum-graph .canvas-shell {
+        aspect-ratio: auto;
+        height: clamp(700px, 82vw, 900px);
+        min-height: 700px;
+        max-height: 900px;
+      }
+
+      html.embedded-pendulum-dom .canvas-shell > canvas,
+      html.embedded-path-planning-dom .canvas-shell > canvas,
+      html.embedded-localization-dom .canvas-shell > canvas,
+      html.embedded-slam-dom .canvas-shell > canvas,
+      html.embedded-robot-dom .canvas-shell > canvas {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+      }
+
+      .embed-dom-toolbar {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      html.embedded-pendulum-dom .embed-dom-toolbar#embed_toolbar,
+      html.embedded-path-planning-dom .embed-dom-toolbar#embed_path_toolbar,
+      html.embedded-localization-dom .embed-dom-toolbar#embed_localization_toolbar,
+      html.embedded-slam-dom .embed-dom-toolbar#embed_slam_toolbar,
+      html.embedded-robot-dom .embed-dom-toolbar#embed_robot_toolbar {
+        display: flex;
+        order: 2;
+      }
+
+      .embed-dom-toolbar button {
+        appearance: none;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-strong) 94%, transparent);
+        color: inherit;
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .embed-dom-toolbar button:hover {
+        background: var(--embed-panel-hover);
+        border-color: var(--embed-accent);
+      }
+
+      .embed-dom-toolbar select {
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+        border-radius: 10px;
+        padding: 0.35rem 0.5rem;
+        font: inherit;
+      }
+
+      .embed-dom-toolbar label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        white-space: nowrap;
+      }
+
+      .embed-dom-toolbar input[type="range"] {
+        accent-color: var(--embed-accent);
+      }
+
+      .embed-dom-toolbar .toolbar-readout {
+        color: var(--embed-text-muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .embed-dom-pendulums {
+        display: none;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      html.embedded-pendulum-dom .embed-dom-pendulums {
+        display: flex;
+        order: 3;
+      }
+
+      .embed-dom-path-planners {
+        display: none;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      html.embedded-path-planning-dom .embed-dom-path-planners {
+        display: flex;
+        order: 3;
+      }
+
+      .embed-dom-localization {
+        display: none;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      html.embedded-localization-dom .embed-dom-localization {
+        display: flex;
+        order: 3;
+      }
+
+      .embed-dom-slam {
+        display: none;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      html.embedded-slam-dom .embed-dom-slam {
+        display: flex;
+        order: 3;
+      }
+
+      .embed-dom-robot {
+        display: none;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      html.embedded-robot-dom .embed-dom-robot {
+        display: flex;
+        order: 3;
+      }
+
+      .pendulum-dom-card {
+        min-width: 220px;
+        max-width: 260px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .pendulum-dom-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .pendulum-dom-card select,
+      .pendulum-dom-card button {
+        font: inherit;
+      }
+
+      .pendulum-dom-card select {
+        width: 100%;
+        margin-top: 0.45rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+      }
+
+      .pendulum-dom-card .card-remove,
+      .planner-dom-card .card-remove,
+      .slam-dom-card .card-remove {
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-strong) 94%, transparent);
+        color: inherit;
+        border-radius: 999px;
+        padding: 0.25rem 0.55rem;
+        cursor: pointer;
+      }
+
+      .pendulum-dom-card details {
+        margin-top: 0.65rem;
+        border-top: 1px solid color-mix(in srgb, var(--embed-border) 55%, transparent);
+        padding-top: 0.55rem;
+      }
+
+      .pendulum-dom-card summary {
+        cursor: pointer;
+        color: var(--embed-text-muted);
+        font-weight: 600;
+      }
+
+      .pendulum-param-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+      }
+
+      .pendulum-param-field {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .pendulum-param-field label {
+        color: var(--embed-text-muted);
+        font-size: 0.92em;
+      }
+
+      .pendulum-param-field input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.35rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+        font: inherit;
+      }
+
+      .pendulum-param-field input[disabled] {
+        opacity: 0.72;
+        cursor: default;
+      }
+
+      .pendulum-trainer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.6rem;
+      }
+
+      .pendulum-trainer-actions button {
+        appearance: none;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-strong) 94%, transparent);
+        color: inherit;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .pendulum-trainer-actions button:hover:not(:disabled),
+      .pendulum-dom-card .card-remove:hover,
+      .planner-dom-card .card-remove:hover,
+      .slam-dom-card .card-remove:hover {
+        background: var(--embed-panel-hover);
+        border-color: var(--embed-accent);
+      }
+
+      .pendulum-trainer-actions button:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .pendulum-trainer-status,
+      .pendulum-trainer-note {
+        margin-top: 0.55rem;
+        color: var(--embed-text-muted);
+        white-space: pre-line;
+      }
+
+      .pendulum-trainer-metrics {
+        margin-top: 0.55rem;
+        display: grid;
+        gap: 0.3rem;
+        color: var(--embed-text);
+      }
+
+      .planner-dom-card {
+        min-width: 220px;
+        max-width: 280px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .planner-dom-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .planner-dom-card-title {
+        font-weight: 700;
+      }
+
+      .planner-dom-accent {
+        width: 100%;
+        height: 4px;
+        border-radius: 999px;
+        margin-bottom: 0.7rem;
+      }
+
+      .planner-inline-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-top: 0.7rem;
+        color: var(--embed-text-muted);
+      }
+
+      .planner-dom-card details {
+        margin-top: 0.65rem;
+        border-top: 1px solid color-mix(in srgb, var(--embed-border) 55%, transparent);
+        padding-top: 0.55rem;
+      }
+
+      .planner-dom-card summary {
+        cursor: pointer;
+        color: var(--embed-text-muted);
+        font-weight: 600;
+      }
+
+      .planner-param-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+      }
+
+      .planner-param-field {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .planner-param-field label {
+        color: var(--embed-text-muted);
+        font-size: 0.92em;
+      }
+
+      .planner-param-field input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.35rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+        font: inherit;
+      }
+
+      .planner-status,
+      .planner-result {
+        margin-top: 0.65rem;
+      }
+
+      .planner-status {
+        color: var(--embed-text-muted);
+      }
+
+      .localization-dom-card {
+        min-width: 220px;
+        max-width: 280px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .localization-dom-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .localization-dom-card-title {
+        font-weight: 700;
+      }
+
+      .localization-status {
+        margin-bottom: 0.7rem;
+        color: var(--embed-text-muted);
+      }
+
+      .localization-dom-card details {
+        margin-top: 0.65rem;
+        border-top: 1px solid color-mix(in srgb, var(--embed-border) 55%, transparent);
+        padding-top: 0.55rem;
+      }
+
+      .localization-dom-card summary {
+        cursor: pointer;
+        color: var(--embed-text-muted);
+        font-weight: 600;
+      }
+
+      .localization-param-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+      }
+
+      .localization-param-field {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .localization-param-field label {
+        color: var(--embed-text-muted);
+        font-size: 0.92em;
+      }
+
+      .localization-param-field input,
+      .localization-param-field select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.35rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+        font: inherit;
+      }
+
+      .slam-dom-card {
+        min-width: 220px;
+        max-width: 280px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .slam-dom-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .slam-dom-card-title {
+        font-weight: 700;
+      }
+
+      .slam-status {
+        margin-bottom: 0.7rem;
+        color: var(--embed-text-muted);
+      }
+
+      .slam-toggle-row,
+      .slam-toggle-grid {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .slam-toggle-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 0.7rem;
+      }
+
+      .slam-toggle-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 0.55rem;
+      }
+
+      .slam-dom-card details {
+        margin-top: 0.65rem;
+        border-top: 1px solid color-mix(in srgb, var(--embed-border) 55%, transparent);
+        padding-top: 0.55rem;
+      }
+
+      .slam-dom-card summary {
+        cursor: pointer;
+        color: var(--embed-text-muted);
+        font-weight: 600;
+      }
+
+      .slam-param-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+      }
+
+      .slam-param-field {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .slam-param-field label {
+        color: var(--embed-text-muted);
+        font-size: 0.92em;
+      }
+
+      .slam-param-field input,
+      .slam-param-field select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.35rem 0.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--embed-border);
+        background: var(--embed-panel-strong);
+        color: inherit;
+        font: inherit;
+      }
+
+      .robot-dom-card {
+        flex: 1 1 260px;
+        min-width: 240px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--embed-border);
+        background: color-mix(in srgb, var(--embed-panel-alt) 88%, transparent);
+        color: var(--embed-text);
+        font: 13px/1.35 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .robot-dom-card-title {
+        font-weight: 700;
+        margin-bottom: 0.45rem;
+      }
+
+      .robot-status {
+        color: var(--embed-text-muted);
+        white-space: pre-line;
       }
 
       .centered {
@@ -112,8 +763,119 @@
   </head>
 
   <body>
-    <!-- The WASM code will resize the canvas dynamically -->
-    <canvas id="the_canvas_id"></canvas>
+    <div class="embed-dom-toolbar" id="embed_toolbar" hidden>
+      <button id="toolbar_pause_button" type="button">Pause</button>
+      <button id="toolbar_restart_button" type="button">Restart</button>
+      <button id="toolbar_add_pendulum_button" type="button">Add New Pendulum</button>
+      <label>
+        <span>Speed</span>
+        <input id="toolbar_speed_input" type="range" min="1" max="20" step="1" value="1" />
+        <span class="toolbar-readout" id="toolbar_speed_value">1x</span>
+      </label>
+      <label>
+        <input id="toolbar_show_graph" type="checkbox" />
+        <span>Graph</span>
+      </label>
+      <label>
+        <input id="toolbar_noise_enabled" type="checkbox" />
+        <span>Noise</span>
+      </label>
+      <label>
+        <span>Magnitude</span>
+        <input id="toolbar_noise_scale" type="range" min="0" max="3" step="0.05" value="0" />
+        <span class="toolbar-readout" id="toolbar_noise_value">0.00</span>
+      </label>
+      <span class="toolbar-readout" id="toolbar_pendulum_count">1 pendulum</span>
+    </div>
+    <div class="embed-dom-pendulums" id="embed_pendulum_cards" hidden></div>
+    <div class="embed-dom-toolbar" id="embed_path_toolbar" hidden>
+      <button id="path_toolbar_restart_button" type="button">Restart</button>
+      <button id="path_toolbar_add_planner_button" type="button">Add Planner</button>
+      <label>
+        <span>Speed</span>
+        <input id="path_toolbar_speed_input" type="range" min="1" max="20" step="1" value="1" />
+        <span class="toolbar-readout" id="path_toolbar_speed_value">1x</span>
+      </label>
+      <label>
+        <span>Environment</span>
+        <select id="path_toolbar_env_mode">
+          <option value="grid">Grid</option>
+          <option value="continuous">Continuous</option>
+        </select>
+      </label>
+      <label id="path_toolbar_radius_wrap" hidden>
+        <span>Obstacle Radius</span>
+        <input
+          id="path_toolbar_radius_input"
+          type="range"
+          min="0.1"
+          max="5"
+          step="0.1"
+          value="1"
+        />
+        <span class="toolbar-readout" id="path_toolbar_radius_value">1.00</span>
+      </label>
+      <span class="toolbar-readout" id="path_toolbar_planner_count">1 planner</span>
+    </div>
+    <div class="embed-dom-path-planners" id="embed_path_planner_cards" hidden></div>
+    <div class="embed-dom-toolbar" id="embed_localization_toolbar" hidden>
+      <button id="localization_toolbar_pause_button" type="button">Pause</button>
+      <button id="localization_toolbar_restart_button" type="button">Restart</button>
+      <button id="localization_toolbar_add_vehicle_button" type="button">Add Vehicle</button>
+      <label>
+        <span>Speed</span>
+        <input
+          id="localization_toolbar_speed_input"
+          type="range"
+          min="1"
+          max="20"
+          step="1"
+          value="1"
+        />
+        <span class="toolbar-readout" id="localization_toolbar_speed_value">1x</span>
+      </label>
+      <span class="toolbar-readout" id="localization_toolbar_vehicle_count">1 vehicle</span>
+    </div>
+    <div class="embed-dom-localization" id="embed_localization_cards" hidden></div>
+    <div class="embed-dom-toolbar" id="embed_slam_toolbar" hidden>
+      <button id="slam_toolbar_pause_button" type="button">Pause</button>
+      <button id="slam_toolbar_restart_button" type="button">Restart</button>
+      <button id="slam_toolbar_add_demo_button" type="button">Add Demo</button>
+      <label>
+        <span>Speed</span>
+        <input id="slam_toolbar_speed_input" type="range" min="1" max="20" step="1" value="1" />
+        <span class="toolbar-readout" id="slam_toolbar_speed_value">1x</span>
+      </label>
+      <span class="toolbar-readout" id="slam_toolbar_count">1 demo</span>
+    </div>
+    <div class="embed-dom-slam" id="embed_slam_cards" hidden></div>
+    <div class="embed-dom-toolbar" id="embed_robot_toolbar" hidden>
+      <button id="robot_toolbar_pause_button" type="button">Pause</button>
+      <button id="robot_toolbar_restart_button" type="button">Restart</button>
+      <button id="robot_toolbar_reset_view_button" type="button">Reset View</button>
+      <label>
+        <span>Speed</span>
+        <input id="robot_toolbar_speed_input" type="range" min="1" max="20" step="1" value="1" />
+        <span class="toolbar-readout" id="robot_toolbar_speed_value">1x</span>
+      </label>
+      <label>
+        <span>Robot</span>
+        <select id="robot_toolbar_robot_select">
+          <option value="go2">Go2</option>
+          <option value="open_duck_mini">Open Duck Mini</option>
+        </select>
+      </label>
+    </div>
+    <div class="embed-dom-robot" id="embed_robot_cards" hidden>
+      <section class="robot-dom-card">
+        <div class="robot-dom-card-title">Robot Runtime</div>
+        <div class="robot-status" id="robot_status_text">Loading robot runtime...</div>
+      </section>
+    </div>
+    <div class="canvas-shell" id="canvas_shell">
+      <!-- The WASM code will resize the canvas dynamically -->
+      <canvas id="the_canvas_id"></canvas>
+    </div>
     <div class="centered" id="center_text">
       <p style="font-size: 16px">Loading…</p>
       <div class="lds-dual-ring"></div>
@@ -205,8 +967,189 @@
 
     <script type="module">
       import init, * as wasm_bindgen from "./rust_robotics_sim.js";
+      import { setupLocalizationEmbed } from "./embeds/localization.js";
+      import { setupPathPlanningEmbed } from "./embeds/path_planning.js";
+      import { setupPendulumEmbed } from "./embeds/pendulum.js";
+      import { setupRobotEmbed } from "./embeds/robot.js";
+      import { setupSlamEmbed } from "./embeds/slam.js";
+      import * as ppoBridge from "./ppo_trainer_bridge.js";
 
       globalThis.wasm_bindgen = wasm_bindgen;
+      globalThis.rustRoboticsPpoTrainerCreate = ppoBridge.rustRoboticsPpoTrainerCreate;
+      globalThis.rustRoboticsPpoTrainerRecreate = ppoBridge.rustRoboticsPpoTrainerRecreate;
+      globalThis.rustRoboticsPpoTrainerRequestTrain = ppoBridge.rustRoboticsPpoTrainerRequestTrain;
+      globalThis.rustRoboticsPpoTrainerPoll = ppoBridge.rustRoboticsPpoTrainerPoll;
+      globalThis.rustRoboticsPpoTrainerLoadSharedState = ppoBridge.rustRoboticsPpoTrainerLoadSharedState;
+      globalThis.rustRoboticsPpoTrainerDestroy = ppoBridge.rustRoboticsPpoTrainerDestroy;
+      globalThis.rustRoboticsEmbedGetState = wasm_bindgen.rust_robotics_embed_get_state;
+      globalThis.rustRoboticsEmbedDispatchAction =
+        wasm_bindgen.rust_robotics_embed_dispatch_action;
+      globalThis.rustRoboticsTestGetState = wasm_bindgen.rust_robotics_test_get_state;
+      globalThis.rustRoboticsTestSetMode = wasm_bindgen.rust_robotics_test_set_mode;
+      globalThis.rustRoboticsTestSetPaused = wasm_bindgen.rust_robotics_test_set_paused;
+      globalThis.rustRoboticsTestRestart = wasm_bindgen.rust_robotics_test_restart;
+      globalThis.rustRoboticsTestSetSimSpeed = wasm_bindgen.rust_robotics_test_set_sim_speed;
+      globalThis.rustRoboticsTestSetShowGraph = wasm_bindgen.rust_robotics_test_set_show_graph;
+      globalThis.rustRoboticsTestSetPendulumNoiseEnabled =
+        wasm_bindgen.rust_robotics_test_set_pendulum_noise_enabled;
+      globalThis.rustRoboticsTestSetPendulumNoiseScale =
+        wasm_bindgen.rust_robotics_test_set_pendulum_noise_scale;
+      globalThis.rustRoboticsTestAddPendulum = wasm_bindgen.rust_robotics_test_add_pendulum;
+      globalThis.rustRoboticsTestSetPendulumController =
+        wasm_bindgen.rust_robotics_test_set_pendulum_controller;
+      globalThis.rustRoboticsTestPatchPendulum =
+        wasm_bindgen.rust_robotics_test_patch_pendulum;
+      globalThis.rustRoboticsTestRemovePendulum =
+        wasm_bindgen.rust_robotics_test_remove_pendulum;
+      globalThis.rustRoboticsSetEmbedMode = wasm_bindgen.rust_robotics_set_embed_mode;
+      globalThis.rustRoboticsTestSetTheme = wasm_bindgen.rust_robotics_test_set_theme;
+
+      function getEmbedState() {
+        if (typeof globalThis.rustRoboticsEmbedGetState === "function") {
+          return globalThis.rustRoboticsEmbedGetState();
+        }
+        if (typeof globalThis.rustRoboticsTestGetState === "function") {
+          return globalThis.rustRoboticsTestGetState();
+        }
+        return null;
+      }
+
+      function dispatchEmbedAction(action) {
+        if (typeof globalThis.rustRoboticsEmbedDispatchAction === "function") {
+          globalThis.rustRoboticsEmbedDispatchAction(JSON.stringify(action));
+        }
+      }
+
+      const pendulumEmbed = setupPendulumEmbed({
+        getEmbedState,
+        dispatchEmbedAction,
+      });
+      const localizationEmbed = setupLocalizationEmbed({
+        getEmbedState,
+        dispatchEmbedAction,
+      });
+      const pathPlanningEmbed = setupPathPlanningEmbed({
+        getEmbedState,
+        dispatchEmbedAction,
+      });
+      const robotEmbed = setupRobotEmbed({
+        getEmbedState,
+        dispatchEmbedAction,
+      });
+      const slamEmbed = setupSlamEmbed({
+        getEmbedState,
+        dispatchEmbedAction,
+      });
+
+      function detectLocalThemePreference() {
+        const params = new URLSearchParams(window.location.search);
+        const queryTheme = params.get("theme");
+        if (queryTheme === "light" || queryTheme === "dark") {
+          return queryTheme;
+        }
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+      }
+
+      function applyEmbedTheme(theme) {
+        const resolvedTheme = theme === "light" ? "light" : "dark";
+        document.documentElement.classList.toggle("embedded-theme-light", resolvedTheme === "light");
+        document.documentElement.classList.toggle("embedded-theme-dark", resolvedTheme === "dark");
+        if (typeof globalThis.rustRoboticsTestSetTheme === "function") {
+          try {
+            globalThis.rustRoboticsTestSetTheme(resolvedTheme);
+          } catch (_error) {
+            // Ignore startup races until the wasm bridge is ready.
+          }
+        }
+      }
+
+      window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (!data || data.type !== "rust-robotics-theme") {
+          return;
+        }
+        applyEmbedTheme(data.theme);
+      });
+
+      function primeEmbedLayoutFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        const embed = params.get("embed");
+
+        if (embed === "focused") {
+          document.documentElement.classList.add("embedded-focused");
+        }
+
+        if (embed === "focused" && mode === "inverted_pendulum") {
+          document.documentElement.classList.add("embedded-pendulum-dom");
+          pendulumEmbed.init();
+        }
+
+        if (embed === "focused" && mode === "localization") {
+          document.documentElement.classList.add("embedded-localization-dom");
+          localizationEmbed.init();
+        }
+
+        if (embed === "focused" && mode === "path_planning") {
+          document.documentElement.classList.add("embedded-path-planning-dom");
+          pathPlanningEmbed.init();
+        }
+
+        if (embed === "focused" && mode === "slam") {
+          document.documentElement.classList.add("embedded-slam-dom");
+          slamEmbed.init();
+        }
+
+        if (embed === "focused" && mode === "robot") {
+          document.documentElement.classList.add("embedded-robot-dom");
+          robotEmbed.init();
+        }
+
+        applyEmbedTheme(detectLocalThemePreference());
+      }
+
+      function applyInitialSimulatorStateFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        const embed = params.get("embed");
+        const paused = params.get("paused");
+        const restart = params.get("restart");
+
+        if (mode && typeof globalThis.rustRoboticsTestSetMode === "function") {
+          try {
+            dispatchEmbedAction({ type: "set_mode", mode });
+          } catch (error) {
+            console.warn("Failed to apply simulator mode from query string:", error);
+          }
+        }
+
+        if (embed && typeof globalThis.rustRoboticsSetEmbedMode === "function") {
+          try {
+            dispatchEmbedAction({ type: "set_embed_mode", mode: embed });
+          } catch (error) {
+            console.warn("Failed to apply embed mode from query string:", error);
+          }
+        }
+
+        if (paused !== null) {
+          try {
+            const pausedValue = paused === "1" || paused === "true";
+            dispatchEmbedAction({ type: "set_paused", paused: pausedValue });
+          } catch (error) {
+            console.warn("Failed to apply paused state from query string:", error);
+          }
+        }
+
+        if (restart === "1" || restart === "true") {
+          try {
+            dispatchEmbedAction({ type: "restart" });
+          } catch (error) {
+            console.warn("Failed to apply restart from query string:", error);
+          }
+        }
+      }
 
       console.log("=== SCRIPT START ===");
       console.log("loading wasm…");
@@ -223,9 +1166,13 @@
 
         try {
           console.log("=== STARTING APP ===");
+          primeEmbedLayoutFromQuery();
           await wasm_bindgen.start("the_canvas_id");
           console.log("=== APP STARTED ===");
           console.log("Canvas after start:", canvas.width, "x", canvas.height);
+          requestAnimationFrame(() => {
+            applyInitialSimulatorStateFromQuery();
+          });
 
           document.getElementById("center_text").remove();
         } catch (e) {
