@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Path Planning Tutorial" href="path_planning.html"><link rel="prev" title="Control Systems Tutorial" href="pendulum.html">
+        <link rel="prefetch" href="../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Localization Tutorial - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,8 +254,9 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="localization-tutorial">
 <h1>Localization Tutorial<a class="headerlink" href="#localization-tutorial" title="Link to this heading">¶</a></h1>
-<p>The localization demo is a compact way to see noisy sensing, motion uncertainty,
-and particle-filter behavior without the extra complexity of full mapping.</p>
+<p>Localization is the problem of estimating where the robot is when its motion is
+uncertain and its sensors are noisy. This tutorial focuses on one of the most
+important practical approaches to that problem: the particle filter.</p>
 <div class="sim-embed-card">
   <iframe
     class="sim-embed-frame"
@@ -260,7 +265,31 @@ and particle-filter behavior without the extra complexity of full mapping.</p>
     title="Rust Robotics localization simulator"
     loading="lazy"
   ></iframe>
-</div><section id="the-estimation-problem">
+</div><section id="learning-goals">
+<h2>Learning goals<a class="headerlink" href="#learning-goals" title="Link to this heading">¶</a></h2>
+<p>This chapter is meant to help you understand:</p>
+<ul class="simple">
+<li><p>why localization is a probabilistic inference problem</p></li>
+<li><p>how particle filters represent uncertainty</p></li>
+<li><p>why resampling is necessary</p></li>
+<li><p>how noise parameters affect estimate quality, diversity, and recovery</p></li>
+<li><p>what the computational and memory cost of a particle filter looks like in practice</p></li>
+</ul>
+</section>
+<section id="where-localization-is-used">
+<h2>Where localization is used<a class="headerlink" href="#where-localization-is-used" title="Link to this heading">¶</a></h2>
+<p>Localization appears almost everywhere in robotics:</p>
+<ul class="simple">
+<li><p>mobile robots navigating indoor spaces</p></li>
+<li><p>autonomous vehicles estimating pose relative to maps and sensors</p></li>
+<li><p>drones estimating position and attitude</p></li>
+<li><p>warehouse robots following known layouts</p></li>
+<li><p>consumer robotics that combine odometry, landmarks, or camera information</p></li>
+</ul>
+<p>This tutorial focuses on particle filtering because it makes uncertainty visible
+in a very direct way.</p>
+</section>
+<section id="the-estimation-problem">
 <h2>The estimation problem<a class="headerlink" href="#the-estimation-problem" title="Link to this heading">¶</a></h2>
 <p>Localization asks for the posterior over robot state given controls and sensor
 measurements:</p>
@@ -273,9 +302,13 @@ p(x_t \mid z_{1:t}, u_{1:t})
 <p>The key difficulty is that both motion and measurement are uncertain. The robot
 does not have direct access to the true state; it only has a motion model and
 noisy observations.</p>
+<p>Even when the robot receives a control command, the realized motion is only
+approximately known. Even when the robot receives a measurement, the
+measurement is only probabilistically related to the true pose.</p>
+<p>That is why localization is fundamentally about belief, not certainty.</p>
 </section>
-<section id="particle-filter-derivation">
-<h2>Particle-filter derivation<a class="headerlink" href="#particle-filter-derivation" title="Link to this heading">¶</a></h2>
+<section id="the-particle-filter-approximation">
+<h2>The particle-filter approximation<a class="headerlink" href="#the-particle-filter-approximation" title="Link to this heading">¶</a></h2>
 <p>The particle filter approximates the posterior with weighted samples:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
@@ -283,7 +316,10 @@ noisy observations.</p>
 p(x_t \mid z_{1:t}, u_{1:t}) \approx \sum_i w_t^{(i)} \delta(x_t - x_t^{(i)})
 \]</div>
 </div>
-<p>Each update has three conceptual stages:</p>
+<p>Each particle is one hypothesis about where the robot might be. The weights
+encode how plausible those hypotheses are after considering the newest
+measurement.</p>
+<p>Each update has three stages:</p>
 <ol class="arabic simple">
 <li><p>predict:
 sample each particle through the motion model</p></li>
@@ -292,44 +328,179 @@ score each particle under the sensor likelihood</p></li>
 <li><p>resample:
 concentrate computation on high-likelihood particles</p></li>
 </ol>
-<p>That is why localization quality depends on both the transition model and the
-measurement model. If either one is badly tuned, the particle cloud either
-spreads too aggressively or collapses onto the wrong region.</p>
-</section>
-<section id="what-this-simulator-is-for">
-<h2>What this simulator is for<a class="headerlink" href="#what-this-simulator-is-for" title="Link to this heading">¶</a></h2>
-<p>That makes it useful for understanding:</p>
+<p>That structure is conceptually simple, but it hides an important engineering
+tradeoff:</p>
 <ul class="simple">
-<li><p>sensor noise</p></li>
-<li><p>motion-model drift</p></li>
-<li><p>particle diversity</p></li>
-<li><p>recovery after the estimate spreads or collapses</p></li>
+<li><p>if the filter spreads too much, the estimate becomes vague and noisy</p></li>
+<li><p>if the filter collapses too quickly, it loses diversity and cannot recover</p></li>
 </ul>
 </section>
-<section id="what-to-look-at">
-<h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
+<section id="how-particle-filters-compare-to-other-estimators">
+<h2>How particle filters compare to other estimators<a class="headerlink" href="#how-particle-filters-compare-to-other-estimators" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Representation</p></th>
+<th class="head"><p>Strength</p></th>
+<th class="head"><p>Limitation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kalman filter / EKF</p></td>
+<td><p>Gaussian belief</p></td>
+<td><p>efficient and elegant</p></td>
+<td><p>limited by Gaussian and model assumptions</p></td>
+</tr>
+<tr class="row-odd"><td><p>Particle filter</p></td>
+<td><p>weighted samples</p></td>
+<td><p>handles non-Gaussian and multi-modal beliefs</p></td>
+<td><p>higher compute and memory cost</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The particle filter is especially useful when ambiguity matters. If several
+poses are plausible, a sample-based representation can keep them alive instead
+of collapsing immediately to one mean and covariance.</p>
+</section>
+<section id="why-particle-filters-are-useful">
+<h2>Why particle filters are useful<a class="headerlink" href="#why-particle-filters-are-useful" title="Link to this heading">¶</a></h2>
+<p>Particle filters are attractive because they can represent non-Gaussian and
+multi-modal beliefs. If the environment is ambiguous, a filter does not need to
+commit immediately to one Gaussian mean and covariance. It can carry multiple
+plausible pose clusters at once.</p>
+<p>This flexibility is the main reason particle filters remain so important in
+teaching and practice.</p>
+</section>
+<section id="complexity-and-memory">
+<h2>Complexity and memory<a class="headerlink" href="#complexity-and-memory" title="Link to this heading">¶</a></h2>
+<p>Let <code class="docutils literal notranslate"><span class="pre">N</span></code> be the number of particles.</p>
 <ul class="simple">
-<li><p>the gap between the true pose and the estimated pose</p></li>
-<li><p>how particle clouds spread during ambiguous motion</p></li>
-<li><p>whether the filter recenters quickly when landmarks or measurements become informative</p></li>
-<li><p>how tuning noise changes confidence and recovery speed</p></li>
+<li><p>prediction cost: <code class="docutils literal notranslate"><span class="pre">O(N)</span></code></p></li>
+<li><p>weighting cost: <code class="docutils literal notranslate"><span class="pre">O(N</span> <span class="pre">*</span> <span class="pre">C_z)</span></code>, where <code class="docutils literal notranslate"><span class="pre">C_z</span></code> depends on the measurement model</p></li>
+<li><p>resampling cost: often <code class="docutils literal notranslate"><span class="pre">O(N)</span></code></p></li>
+<li><p>memory: <code class="docutils literal notranslate"><span class="pre">O(N)</span></code> for particle states and weights</p></li>
 </ul>
+<p>This is one of the central tradeoffs of localization:</p>
+<ul class="simple">
+<li><p>more particles improve approximation quality</p></li>
+<li><p>more particles also increase compute and memory cost</p></li>
+</ul>
+<p>The simulator helps make this visible because particle count affects both the
+estimate and the visual density of the belief.</p>
+</section>
+<section id="practical-tradeoffs">
+<h2>Practical tradeoffs<a class="headerlink" href="#practical-tradeoffs" title="Link to this heading">¶</a></h2>
+<section id="more-particles">
+<h3>More particles<a class="headerlink" href="#more-particles" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>better approximation of the posterior</p></li>
+<li><p>better recovery from ambiguity</p></li>
+<li><p>higher runtime cost</p></li>
+<li><p>higher memory cost</p></li>
+</ul>
+</section>
+<section id="stronger-sensor-trust">
+<h3>Stronger sensor trust<a class="headerlink" href="#stronger-sensor-trust" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>can sharpen the estimate quickly</p></li>
+<li><p>can also overcommit to bad observations</p></li>
+</ul>
+</section>
+<section id="stronger-motion-noise">
+<h3>Stronger motion noise<a class="headerlink" href="#stronger-motion-noise" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>can preserve diversity</p></li>
+<li><p>can also make the estimate diffuse and unstable</p></li>
+</ul>
+</section>
+</section>
+<section id="what-to-look-for-in-the-simulator">
+<h2>What to look for in the simulator<a class="headerlink" href="#what-to-look-for-in-the-simulator" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>the gap between true pose and estimated pose</p></li>
+<li><p>how tightly or loosely the particles cluster</p></li>
+<li><p>whether the cloud follows motion smoothly or lags</p></li>
+<li><p>whether the filter can recover after the belief becomes diffuse</p></li>
+<li><p>how ambiguity appears as multiple plausible regions</p></li>
+</ul>
+</section>
+<section id="sensor-model-intuition">
+<h2>Sensor model intuition<a class="headerlink" href="#sensor-model-intuition" title="Link to this heading">¶</a></h2>
+<p>The sensor model determines how strongly a measurement should reward or punish a
+particle. If the measurement model is too sharp, the filter may overcommit to a
+bad measurement. If it is too loose, the filter may fail to use informative
+sensing.</p>
+<p>That means more trust in the sensor is not always better. It is better only if
+the model is actually accurate.</p>
+</section>
+<section id="resampling-and-degeneracy">
+<h2>Resampling and degeneracy<a class="headerlink" href="#resampling-and-degeneracy" title="Link to this heading">¶</a></h2>
+<p>Without resampling, many particles eventually receive negligible weight and stop
+contributing meaningfully to the posterior. This is called particle degeneracy.</p>
+<p>Resampling addresses degeneracy by replicating high-weight particles and
+discarding low-weight ones. But resampling also reduces diversity.</p>
+<p>So resampling solves one problem while creating another. Good particle-filter
+design is largely about balancing those two effects.</p>
 </section>
 <section id="try-this">
 <h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<section id="experiment-1-motion-uncertainty">
+<h3>Experiment 1: Motion uncertainty<a class="headerlink" href="#experiment-1-motion-uncertainty" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Run the default filter and watch the particle cloud during turns.</p></li>
-<li><p>Increase process noise and see how quickly uncertainty spreads.</p></li>
-<li><p>Increase sensor noise and watch the estimate become less anchored.</p></li>
-<li><p>Reset and repeat with calmer motion to see how the same filter behaves under easier conditions.</p></li>
+<li><p>Run the default setup and observe the particle cloud during turns.</p></li>
+<li><p>Increase motion noise.</p></li>
+<li><p>Watch the cloud spread and the estimate become less certain.</p></li>
 </ol>
 </section>
-<section id="implementation-mapping">
-<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
-<p>The underlying estimator lives in <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, while the simulator UI
-and visualization live in <code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code>. That separation matters because
-it keeps the estimation logic testable outside the app shell and lets the same
-filter implementation stay reusable even if the visualization changes.</p>
+<section id="experiment-2-measurement-quality">
+<h3>Experiment 2: Measurement quality<a class="headerlink" href="#experiment-2-measurement-quality" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Reset the scenario.</p></li>
+<li><p>Increase sensor noise.</p></li>
+<li><p>Observe how much less tightly the cloud recenters after informative observations.</p></li>
+</ol>
+</section>
+<section id="experiment-3-recovery-behavior">
+<h3>Experiment 3: Recovery behavior<a class="headerlink" href="#experiment-3-recovery-behavior" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Use a setting with high uncertainty.</p></li>
+<li><p>Let the filter drift away from the true pose.</p></li>
+<li><p>Watch whether repeated observations pull the estimate back into place.</p></li>
+</ol>
+</section>
+<section id="experiment-4-stability-versus-responsiveness">
+<h3>Experiment 4: Stability versus responsiveness<a class="headerlink" href="#experiment-4-stability-versus-responsiveness" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Compare a conservative noise setting and an aggressive one.</p></li>
+<li><p>Notice that one may look smoother while the other adapts faster.</p></li>
+<li><p>Decide which behavior would be preferable for a specific application.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-mistakes-when-studying-localization">
+<h2>Common mistakes when studying localization<a class="headerlink" href="#common-mistakes-when-studying-localization" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>interpreting the mean estimate as the whole story</p></li>
+<li><p>ignoring particle diversity</p></li>
+<li><p>assuming a sharper sensor model is always better</p></li>
+<li><p>forgetting that bad motion modeling can dominate the filter</p></li>
+<li><p>overlooking the computational cost of increasing particle count</p></li>
+</ul>
+</section>
+<section id="what-this-chapter-is-really-teaching">
+<h2>What this chapter is really teaching<a class="headerlink" href="#what-this-chapter-is-really-teaching" title="Link to this heading">¶</a></h2>
+<p>Localization is not about guessing position. It is about maintaining and
+updating a distribution over plausible states.</p>
+<p>Once that viewpoint becomes natural, many robotics problems become easier to
+understand:</p>
+<ul class="simple">
+<li><p>uncertainty is explicit</p></li>
+<li><p>sensing quality matters quantitatively</p></li>
+<li><p>compute and memory tradeoffs become visible</p></li>
+<li><p>and recovery is a statistical question, not a purely geometric one</p></li>
+</ul>
 </section>
 </section>
 
@@ -389,12 +560,31 @@ filter implementation stay reusable even if the visualization changes.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Localization Tutorial</a><ul>
+<li><a class="reference internal" href="#learning-goals">Learning goals</a></li>
+<li><a class="reference internal" href="#where-localization-is-used">Where localization is used</a></li>
 <li><a class="reference internal" href="#the-estimation-problem">The estimation problem</a></li>
-<li><a class="reference internal" href="#particle-filter-derivation">Particle-filter derivation</a></li>
-<li><a class="reference internal" href="#what-this-simulator-is-for">What this simulator is for</a></li>
-<li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
-<li><a class="reference internal" href="#try-this">Try this</a></li>
-<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+<li><a class="reference internal" href="#the-particle-filter-approximation">The particle-filter approximation</a></li>
+<li><a class="reference internal" href="#how-particle-filters-compare-to-other-estimators">How particle filters compare to other estimators</a></li>
+<li><a class="reference internal" href="#why-particle-filters-are-useful">Why particle filters are useful</a></li>
+<li><a class="reference internal" href="#complexity-and-memory">Complexity and memory</a></li>
+<li><a class="reference internal" href="#practical-tradeoffs">Practical tradeoffs</a><ul>
+<li><a class="reference internal" href="#more-particles">More particles</a></li>
+<li><a class="reference internal" href="#stronger-sensor-trust">Stronger sensor trust</a></li>
+<li><a class="reference internal" href="#stronger-motion-noise">Stronger motion noise</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-to-look-for-in-the-simulator">What to look for in the simulator</a></li>
+<li><a class="reference internal" href="#sensor-model-intuition">Sensor model intuition</a></li>
+<li><a class="reference internal" href="#resampling-and-degeneracy">Resampling and degeneracy</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a><ul>
+<li><a class="reference internal" href="#experiment-1-motion-uncertainty">Experiment 1: Motion uncertainty</a></li>
+<li><a class="reference internal" href="#experiment-2-measurement-quality">Experiment 2: Measurement quality</a></li>
+<li><a class="reference internal" href="#experiment-3-recovery-behavior">Experiment 3: Recovery behavior</a></li>
+<li><a class="reference internal" href="#experiment-4-stability-versus-responsiveness">Experiment 4: Stability versus responsiveness</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-mistakes-when-studying-localization">Common mistakes when studying localization</a></li>
+<li><a class="reference internal" href="#what-this-chapter-is-really-teaching">What this chapter is really teaching</a></li>
 </ul>
 </li>
 </ul>

@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="SLAM Tutorial" href="slam.html"><link rel="prev" title="Localization Tutorial" href="localization.html">
+        <link rel="prefetch" href="../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Path Planning Tutorial - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,8 +254,10 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="path-planning-tutorial">
 <h1>Path Planning Tutorial<a class="headerlink" href="#path-planning-tutorial" title="Link to this heading">¶</a></h1>
-<p>The path-planning demo is the easiest place to compare search behavior across
-different environments and algorithm assumptions.</p>
+<p>Path planning is the problem of finding a feasible route from a start state to
+a goal state while optimizing some notion of quality, such as length, smoothness,
+clearance, or search effort. This tutorial compares several planning ideas in
+the same environment so their behavior can be studied side by side.</p>
 <div class="sim-embed-card">
   <iframe
     class="sim-embed-frame"
@@ -260,18 +266,47 @@ different environments and algorithm assumptions.</p>
     title="Rust Robotics path planning simulator"
     loading="lazy"
   ></iframe>
-</div><section id="the-planning-problem">
+</div><section id="learning-goals">
+<h2>Learning goals<a class="headerlink" href="#learning-goals" title="Link to this heading">¶</a></h2>
+<p>This chapter is designed to help you answer:</p>
+<ul class="simple">
+<li><p>what makes graph search different from sampling-based planning?</p></li>
+<li><p>what do heuristics really buy you?</p></li>
+<li><p>why are some paths optimal but visually awkward?</p></li>
+<li><p>how do complexity and memory usage change across planners?</p></li>
+<li><p>how should you interpret planner behavior when the map gets cluttered?</p></li>
+</ul>
+</section>
+<section id="where-these-planners-are-used">
+<h2>Where these planners are used<a class="headerlink" href="#where-these-planners-are-used" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Dijkstra and A*:
+navigation on roadmaps, occupancy grids, tile maps, and graph-structured motion problems</p></li>
+<li><p>Theta*:
+grid-based systems where path shape matters but a full continuous planner is unnecessary</p></li>
+<li><p>RRT:
+continuous configuration spaces, motion planning, kinodynamic and high-dimensional planning families</p></li>
+</ul>
+</section>
+<section id="the-planning-problem">
 <h2>The planning problem<a class="headerlink" href="#the-planning-problem" title="Link to this heading">¶</a></h2>
 <p>Path planning is an optimization problem over feasible trajectories. In the
 simplest discrete case, the planner is minimizing cumulative cost from a start
 node to a goal node while respecting obstacle constraints.</p>
+<p>The exact form of the problem depends on how the environment is represented:</p>
+<ul class="simple">
+<li><p>as a graph or grid</p></li>
+<li><p>as a continuous geometric space</p></li>
+<li><p>as a state lattice with motion constraints</p></li>
+</ul>
+<p>This tutorial compares planners that sit at different points on that spectrum.</p>
 </section>
-<section id="theoretical-derivations">
-<h2>Theoretical derivations<a class="headerlink" href="#theoretical-derivations" title="Link to this heading">¶</a></h2>
-<section id="dijkstra-and-a">
-<h3>Dijkstra and A*<a class="headerlink" href="#dijkstra-and-a" title="Link to this heading">¶</a></h3>
-<p>Dijkstra expands nodes in order of path cost <code class="docutils literal notranslate"><span class="pre">g(n)</span></code>. A* adds a heuristic
-estimate <code class="docutils literal notranslate"><span class="pre">h(n)</span></code> and ranks candidates by:</p>
+<section id="dijkstra-and-a-optimal-graph-search">
+<h2>Dijkstra and A*: optimal graph search<a class="headerlink" href="#dijkstra-and-a-optimal-graph-search" title="Link to this heading">¶</a></h2>
+<p>Dijkstra expands nodes in order of accumulated cost <code class="docutils literal notranslate"><span class="pre">g(n)</span></code>. It is complete and
+optimal for nonnegative edge costs, but it can waste significant work because
+it has no notion of how promising a state is with respect to the goal.</p>
+<p>A* adds a heuristic <code class="docutils literal notranslate"><span class="pre">h(n)</span></code> and ranks candidates by:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
@@ -280,55 +315,210 @@ f(n) = g(n) + h(n)
 </div>
 <p>If <code class="docutils literal notranslate"><span class="pre">h(n)</span></code> is admissible, A* preserves optimality while usually exploring fewer
 states than Dijkstra.</p>
+<section id="complexity-and-memory">
+<h3>Complexity and memory<a class="headerlink" href="#complexity-and-memory" title="Link to this heading">¶</a></h3>
+<p>Using a priority queue, both algorithms are commonly described as roughly
+<code class="docutils literal notranslate"><span class="pre">O(E</span> <span class="pre">log</span> <span class="pre">V)</span></code> on a graph with <code class="docutils literal notranslate"><span class="pre">V</span></code> vertices and <code class="docutils literal notranslate"><span class="pre">E</span></code> edges, though actual behavior
+depends strongly on the heuristic and representation.</p>
+<p>Memory usage is also important:</p>
+<ul class="simple">
+<li><p>both methods must remember frontier and visited structures</p></li>
+<li><p>in large grids, memory can become a practical bottleneck before asymptotic
+runtime does</p></li>
+</ul>
 </section>
-<section id="theta">
-<h3>Theta*<a class="headerlink" href="#theta" title="Link to this heading">¶</a></h3>
+</section>
+<section id="what-the-heuristic-changes-in-a">
+<h2>What the heuristic changes in A*<a class="headerlink" href="#what-the-heuristic-changes-in-a" title="Link to this heading">¶</a></h2>
+<p>The heuristic is not a minor detail. It determines how much search effort can
+be saved without giving up optimality.</p>
+<ul class="simple">
+<li><p>a weak heuristic makes A* look closer to Dijkstra</p></li>
+<li><p>a strong admissible heuristic can reduce search dramatically</p></li>
+<li><p>a bad heuristic can lose guarantees or simply fail to help</p></li>
+</ul>
+</section>
+<section id="theta-any-angle-planning-on-top-of-graph-search">
+<h2>Theta*: any-angle planning on top of graph search<a class="headerlink" href="#theta-any-angle-planning-on-top-of-graph-search" title="Link to this heading">¶</a></h2>
 <p>Theta* keeps the A* search structure but allows line-of-sight shortcuts between
 parents and descendants. The effect is that the solution path can become less
-“grid stair-stepped” without abandoning the graph-search framing.</p>
+grid stair-stepped without abandoning the graph-search framing.</p>
+<p>The main lesson here is that path quality is not only about shortest graph cost.
+Representation matters. A graph can encode an awkward geometry even when the
+search itself is optimal on that graph.</p>
 </section>
-<section id="rrt">
-<h3>RRT<a class="headerlink" href="#rrt" title="Link to this heading">¶</a></h3>
+<section id="rrt-sampling-based-planning-in-continuous-space">
+<h2>RRT: sampling-based planning in continuous space<a class="headerlink" href="#rrt-sampling-based-planning-in-continuous-space" title="Link to this heading">¶</a></h2>
 <p>RRT changes the problem entirely. Instead of exhaustively expanding a structured
 graph, it samples free space, connects toward samples, and grows a tree. It is
 useful when the search space is continuous or the environment is awkward for a
 uniform grid representation.</p>
-</section>
-</section>
-<section id="what-this-simulator-is-for">
-<h2>What this simulator is for<a class="headerlink" href="#what-this-simulator-is-for" title="Link to this heading">¶</a></h2>
-<p>It is useful for comparing:</p>
+<p>Sampling-based planning gives up deterministic optimality guarantees in its
+simplest form, but gains flexibility in spaces where graph construction is
+expensive or unnatural.</p>
+<section id="id1">
+<h3>Complexity and memory<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>graph-based vs continuous planning</p></li>
-<li><p>obstacle-density sensitivity</p></li>
-<li><p>resolution tradeoffs</p></li>
-<li><p>path quality vs search effort</p></li>
+<li><p>runtime: usually described in terms of number of samples or iterations rather
+than graph size</p></li>
+<li><p>memory: proportional to the number of stored samples or tree nodes</p></li>
+<li><p>quality: strongly dependent on stopping criteria, connection strategy, and
+post-processing</p></li>
 </ul>
 </section>
-<section id="what-to-look-at">
-<h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
+</section>
+<section id="comparison-at-a-glance">
+<h2>Comparison at a glance<a class="headerlink" href="#comparison-at-a-glance" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Planner</p></th>
+<th class="head"><p>Space model</p></th>
+<th class="head"><p>Typical objective</p></th>
+<th class="head"><p>Practical strength</p></th>
+<th class="head"><p>Practical weakness</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Dijkstra</p></td>
+<td><p>graph</p></td>
+<td><p>shortest path on the graph</p></td>
+<td><p>simple and reliable</p></td>
+<td><p>explores too broadly</p></td>
+</tr>
+<tr class="row-odd"><td><p>A*</p></td>
+<td><p>graph + heuristic</p></td>
+<td><p>shortest path on the graph</p></td>
+<td><p>much better focused search</p></td>
+<td><p>depends on heuristic quality</p></td>
+</tr>
+<tr class="row-even"><td><p>Theta*</p></td>
+<td><p>graph + line of sight</p></td>
+<td><p>shorter, less stair-stepped graph paths</p></td>
+<td><p>visually better paths on grids</p></td>
+<td><p>still tied to graph representation</p></td>
+</tr>
+<tr class="row-odd"><td><p>RRT</p></td>
+<td><p>continuous samples</p></td>
+<td><p>feasible path, often quickly</p></td>
+<td><p>flexible in continuous spaces</p></td>
+<td><p>no simple optimality story in the basic form</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="what-to-compare-in-the-simulator">
+<h2>What to compare in the simulator<a class="headerlink" href="#what-to-compare-in-the-simulator" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>whether the path hugs obstacles or keeps useful clearance</p></li>
 <li><p>how path shape changes when you switch environment representation</p></li>
 <li><p>how grid resolution affects both path quality and search complexity</p></li>
 <li><p>which algorithms recover gracefully when the scene gets cluttered</p></li>
 </ul>
+<p>In practice, a good planner depends on the application:</p>
+<ul class="simple">
+<li><p>optimality may matter</p></li>
+<li><p>smoothness may matter</p></li>
+<li><p>fast initial feasibility may matter</p></li>
+<li><p>memory use may matter</p></li>
+<li><p>deterministic behavior may matter</p></li>
+</ul>
+<p>This simulator is useful because it makes those tradeoffs visible under the same
+start/goal pair.</p>
+</section>
+<section id="complexity-and-memory-summary">
+<h2>Complexity and memory summary<a class="headerlink" href="#complexity-and-memory-summary" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Planner family</p></th>
+<th class="head"><p>Typical strength</p></th>
+<th class="head"><p>Typical cost profile</p></th>
+<th class="head"><p>Memory profile</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Dijkstra</p></td>
+<td><p>guaranteed optimal shortest path on the graph</p></td>
+<td><p>explores broadly</p></td>
+<td><p>stores frontier plus visited graph state</p></td>
+</tr>
+<tr class="row-odd"><td><p>A*</p></td>
+<td><p>same guarantee with good heuristic guidance</p></td>
+<td><p>often much faster than Dijkstra in practice</p></td>
+<td><p>similar to Dijkstra</p></td>
+</tr>
+<tr class="row-even"><td><p>Theta*</p></td>
+<td><p>smoother graph-based paths</p></td>
+<td><p>extra visibility checks</p></td>
+<td><p>similar frontier memory plus geometry checks</p></td>
+</tr>
+<tr class="row-odd"><td><p>RRT</p></td>
+<td><p>scalable feasibility in continuous spaces</p></td>
+<td><p>depends on sample count and collision checks</p></td>
+<td><p>stores tree nodes and parent structure</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="try-this">
 <h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<section id="experiment-1-optimality-versus-shape">
+<h3>Experiment 1: Optimality versus shape<a class="headerlink" href="#experiment-1-optimality-versus-shape" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Start with a sparse map and compare the shortest path to the smoothest path.</p></li>
-<li><p>Increase obstacle density and look for search patterns that degrade first.</p></li>
-<li><p>Change environment mode and compare how the same start/goal pair behaves.</p></li>
-<li><p>Add another planner instance to compare results side by side.</p></li>
+<li><p>Start in a sparse environment.</p></li>
+<li><p>Compare Dijkstra, A*, and Theta*.</p></li>
+<li><p>Note that the mathematically shortest graph path may still look visually awkward.</p></li>
 </ol>
 </section>
-<section id="implementation-mapping">
-<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
-<p>The planner implementations live in <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, but the multi-planner
-coordination, scene editing, and synchronized simulator controls live in
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code>. That keeps the algorithms reusable while still letting the
-app act as a comparison harness.</p>
+<section id="experiment-2-heuristic-value">
+<h3>Experiment 2: Heuristic value<a class="headerlink" href="#experiment-2-heuristic-value" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Compare Dijkstra and A* on the same scene.</p></li>
+<li><p>Observe how much unnecessary exploration disappears when the heuristic is informative.</p></li>
+</ol>
+</section>
+<section id="experiment-3-representation-sensitivity">
+<h3>Experiment 3: Representation sensitivity<a class="headerlink" href="#experiment-3-representation-sensitivity" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Switch environment mode or resolution.</p></li>
+<li><p>Compare how graph-based and sampling-based methods react.</p></li>
+<li><p>Look for cases where a planner’s weakness is really a representation weakness.</p></li>
+</ol>
+</section>
+<section id="experiment-4-clutter-and-scalability">
+<h3>Experiment 4: Clutter and scalability<a class="headerlink" href="#experiment-4-clutter-and-scalability" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Increase obstacle density.</p></li>
+<li><p>Watch which planners degrade gracefully.</p></li>
+<li><p>Compare path quality against search effort, not just success versus failure.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-mistakes-when-reasoning-about-planning">
+<h2>Common mistakes when reasoning about planning<a class="headerlink" href="#common-mistakes-when-reasoning-about-planning" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>equating geometric smoothness with optimality</p></li>
+<li><p>assuming admissible heuristics are always easy to design</p></li>
+<li><p>ignoring memory cost on large search spaces</p></li>
+<li><p>comparing planners without accounting for different environment representations</p></li>
+<li><p>judging RRT by the same criteria as an optimal graph planner</p></li>
+</ul>
+</section>
+<section id="what-this-chapter-is-really-teaching">
+<h2>What this chapter is really teaching<a class="headerlink" href="#what-this-chapter-is-really-teaching" title="Link to this heading">¶</a></h2>
+<p>Path planning is not one algorithmic problem with one best method. It is a
+family of tradeoffs between:</p>
+<ul class="simple">
+<li><p>representation</p></li>
+<li><p>optimality</p></li>
+<li><p>compute budget</p></li>
+<li><p>memory budget</p></li>
+<li><p>and the kind of path quality that actually matters for the robot</p></li>
+</ul>
+<p>The live comparisons are there to make those tradeoffs concrete rather than abstract.</p>
 </section>
 </section>
 
@@ -388,17 +578,31 @@ app act as a comparison harness.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Path Planning Tutorial</a><ul>
+<li><a class="reference internal" href="#learning-goals">Learning goals</a></li>
+<li><a class="reference internal" href="#where-these-planners-are-used">Where these planners are used</a></li>
 <li><a class="reference internal" href="#the-planning-problem">The planning problem</a></li>
-<li><a class="reference internal" href="#theoretical-derivations">Theoretical derivations</a><ul>
-<li><a class="reference internal" href="#dijkstra-and-a">Dijkstra and A*</a></li>
-<li><a class="reference internal" href="#theta">Theta*</a></li>
-<li><a class="reference internal" href="#rrt">RRT</a></li>
+<li><a class="reference internal" href="#dijkstra-and-a-optimal-graph-search">Dijkstra and A*: optimal graph search</a><ul>
+<li><a class="reference internal" href="#complexity-and-memory">Complexity and memory</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#what-this-simulator-is-for">What this simulator is for</a></li>
-<li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
-<li><a class="reference internal" href="#try-this">Try this</a></li>
-<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+<li><a class="reference internal" href="#what-the-heuristic-changes-in-a">What the heuristic changes in A*</a></li>
+<li><a class="reference internal" href="#theta-any-angle-planning-on-top-of-graph-search">Theta*: any-angle planning on top of graph search</a></li>
+<li><a class="reference internal" href="#rrt-sampling-based-planning-in-continuous-space">RRT: sampling-based planning in continuous space</a><ul>
+<li><a class="reference internal" href="#id1">Complexity and memory</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comparison-at-a-glance">Comparison at a glance</a></li>
+<li><a class="reference internal" href="#what-to-compare-in-the-simulator">What to compare in the simulator</a></li>
+<li><a class="reference internal" href="#complexity-and-memory-summary">Complexity and memory summary</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a><ul>
+<li><a class="reference internal" href="#experiment-1-optimality-versus-shape">Experiment 1: Optimality versus shape</a></li>
+<li><a class="reference internal" href="#experiment-2-heuristic-value">Experiment 2: Heuristic value</a></li>
+<li><a class="reference internal" href="#experiment-3-representation-sensitivity">Experiment 3: Representation sensitivity</a></li>
+<li><a class="reference internal" href="#experiment-4-clutter-and-scalability">Experiment 4: Clutter and scalability</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-mistakes-when-reasoning-about-planning">Common mistakes when reasoning about planning</a></li>
+<li><a class="reference internal" href="#what-this-chapter-is-really-teaching">What this chapter is really teaching</a></li>
 </ul>
 </li>
 </ul>

@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="prev" title="SLAM Tutorial" href="slam.html">
+        <link rel="prefetch" href="../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Robot Tutorial - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,8 +254,11 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="robot-tutorial">
 <h1>Robot Tutorial<a class="headerlink" href="#robot-tutorial" title="Link to this heading">¶</a></h1>
-<p>The robot mode is the most complete end-to-end path in the repo: MuJoCo world
-state, shared robot-framework logic, browser runtime glue, and policy execution.</p>
+<p>The robot tutorial is where the ideas from the earlier chapters stop looking
+like isolated textbook problems and start looking like a real control loop. The
+robot simulator is still educational rather than production-grade, but it makes
+one important transition visible:</p>
+<p>how do algorithms become a runtime?</p>
 <div class="sim-embed-card">
   <iframe
     class="sim-embed-frame"
@@ -260,75 +267,210 @@ state, shared robot-framework logic, browser runtime glue, and policy execution.
     title="Rust Robotics robot runtime simulator"
     loading="lazy"
   ></iframe>
-</div><section id="the-runtime-pipeline">
-<h2>The runtime pipeline<a class="headerlink" href="#the-runtime-pipeline" title="Link to this heading">¶</a></h2>
-<p>This mode is where the architecture boundary matters most.</p>
-<p>The simulator owns:</p>
+</div><section id="learning-goals">
+<h2>Learning goals<a class="headerlink" href="#learning-goals" title="Link to this heading">¶</a></h2>
+<p>This chapter is built to answer questions such as:</p>
 <ul class="simple">
-<li><p>MuJoCo model and data</p></li>
-<li><p>stepping and reset</p></li>
-<li><p>native and web viewport/runtime glue</p></li>
+<li><p>what changes when control moves from a toy system to a legged robot simulator?</p></li>
+<li><p>how do observations, policies, commands, and actuation fit together?</p></li>
+<li><p>why do latency, memory, and compute matter more in a richer runtime?</p></li>
+<li><p>what does portability mean in practice for robot control software?</p></li>
 </ul>
-<p>The shared robot framework owns:</p>
-<ul class="simple">
-<li><p>observation construction</p></li>
-<li><p>command semantics</p></li>
-<li><p>recurrent/action state</p></li>
-<li><p>action smoothing</p></li>
-<li><p>actuation decoding</p></li>
-</ul>
-<p>That is what allows Go2 and Open Duck Mini control logic to stay shared across
-native and browser execution.</p>
 </section>
-<section id="theoretical-flow">
-<h2>Theoretical flow<a class="headerlink" href="#theoretical-flow" title="Link to this heading">¶</a></h2>
-<p>The robot runtime follows a five-stage loop:</p>
+<section id="where-this-matters-in-practice">
+<h2>Where this matters in practice<a class="headerlink" href="#where-this-matters-in-practice" title="Link to this heading">¶</a></h2>
+<p>Robot runtimes like this are relevant whenever an algorithm must actually live
+inside a control loop rather than on paper:</p>
+<ul class="simple">
+<li><p>legged locomotion</p></li>
+<li><p>mobile robot command following</p></li>
+<li><p>simulation-to-deployment experiments</p></li>
+<li><p>browser-accessible demonstrations for education and testing</p></li>
+<li><p>native interactive tools used for debugging behavior</p></li>
+</ul>
+</section>
+<section id="the-runtime-loop">
+<h2>The runtime loop<a class="headerlink" href="#the-runtime-loop" title="Link to this heading">¶</a></h2>
+<p>At a high level, the robot runtime follows a standard perception-to-action loop:</p>
 <ol class="arabic simple">
-<li><p>MuJoCo produces raw state from the world</p></li>
-<li><p>the robot framework constructs an observation vector</p></li>
-<li><p>the policy backend performs inference</p></li>
-<li><p>the robot framework decodes network output into robot actuation</p></li>
-<li><p>the simulator applies that actuation back into the world</p></li>
+<li><p>the simulator advances the world and produces raw robot state</p></li>
+<li><p>that state is converted into an observation vector</p></li>
+<li><p>a controller or policy consumes the observation</p></li>
+<li><p>the output is decoded into actuation</p></li>
+<li><p>the world steps again under the new actuation</p></li>
 </ol>
 <p>Conceptually:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-\text{world state} \rightarrow \text{observation} \rightarrow \pi(o) \rightarrow \text{actuation} \rightarrow \text{world step}
+\text{state} \rightarrow \text{observation} \rightarrow \text{policy} \rightarrow \text{action} \rightarrow \text{next state}
 \]</div>
 </div>
-<p>The important design decision is that the world and the robot semantics are not
-owned by the same crate. That keeps MuJoCo-specific API ownership in the
-simulator and keeps the command/observation/policy logic reusable.</p>
+<p>This loop sounds simple, but every stage creates design questions.</p>
+</section>
+<section id="why-this-loop-is-more-demanding-than-the-pendulum">
+<h2>Why this loop is more demanding than the pendulum<a class="headerlink" href="#why-this-loop-is-more-demanding-than-the-pendulum" title="Link to this heading">¶</a></h2>
+<p>Compared with the pendulum tutorial, the robot runtime has:</p>
+<ul class="simple">
+<li><p>much larger observation spaces</p></li>
+<li><p>more actuators</p></li>
+<li><p>more complicated contact dynamics</p></li>
+<li><p>stronger dependence on timing and stability</p></li>
+<li><p>more opportunities for mismatch between simulation and future deployment</p></li>
+</ul>
+<p>That makes it the right place to discuss not only does the algorithm work, but also:</p>
+<ul class="simple">
+<li><p>how much state must be carried?</p></li>
+<li><p>how much memory does inference require?</p></li>
+<li><p>how much latency is acceptable?</p></li>
+<li><p>how portable is the implementation between native and web environments?</p></li>
+</ul>
+</section>
+<section id="observations-and-actions">
+<h2>Observations and actions<a class="headerlink" href="#observations-and-actions" title="Link to this heading">¶</a></h2>
+<p>The observation vector is the compression of the world into what the controller
+is allowed to see. Good observation design matters because:</p>
+<ul class="simple">
+<li><p>too little information makes control impossible or brittle</p></li>
+<li><p>too much information increases model size and training burden</p></li>
+<li><p>the wrong representation can make transfer or generalization harder</p></li>
+</ul>
+<p>Similarly, the action representation matters because the controller may not
+output torques directly. It may output:</p>
+<ul class="simple">
+<li><p>desired joint targets</p></li>
+<li><p>normalized action values</p></li>
+<li><p>velocity-like commands</p></li>
+<li><p>gait or command abstractions that are decoded further downstream</p></li>
+</ul>
+<p>This separation is one of the central practical lessons of robot control: the
+policy output is rarely the final actuator command in the most naive sense.</p>
+</section>
+<section id="portability-as-a-design-goal">
+<h2>Portability as a design goal<a class="headerlink" href="#portability-as-a-design-goal" title="Link to this heading">¶</a></h2>
+<p>One of the main ideas behind Rust Robotics is that the same control logic should
+not be trapped in one runtime.</p>
+<p>In practical terms, portability means:</p>
+<ul class="simple">
+<li><p>the same control semantics can appear in the browser and native application</p></li>
+<li><p>the same algorithmic core does not need to be rewritten for each UI host</p></li>
+<li><p>simulation can be used as a public teaching surface without forcing a separate
+implementation stack</p></li>
+</ul>
+<p>This is not only a software engineering preference. It is educationally useful:
+if a reader can study the same runtime loop in multiple accessible environments,
+the barrier to experimentation is lower.</p>
+</section>
+<section id="comparison-to-the-earlier-tutorials">
+<h2>Comparison to the earlier tutorials<a class="headerlink" href="#comparison-to-the-earlier-tutorials" title="Link to this heading">¶</a></h2>
+<p>The earlier tutorials isolate one main problem at a time:</p>
+<ul class="simple">
+<li><p>control</p></li>
+<li><p>localization</p></li>
+<li><p>planning</p></li>
+<li><p>SLAM</p></li>
+</ul>
+<p>The robot runtime combines several ideas at once. That is why it is a useful
+final chapter: it shows what changes when algorithms become part of a system
+with state, timing, and interface constraints.</p>
+</section>
+<section id="performance-memory-and-runtime-concerns">
+<h2>Performance, memory, and runtime concerns<a class="headerlink" href="#performance-memory-and-runtime-concerns" title="Link to this heading">¶</a></h2>
+<p>Robot control is where practical systems issues become unavoidable.</p>
+<section id="compute">
+<h3>Compute<a class="headerlink" href="#compute" title="Link to this heading">¶</a></h3>
+<p>A control loop must finish within its time budget. If policy inference, state
+construction, or decoding becomes too slow, the controller may destabilize or
+behave inconsistently.</p>
+</section>
+<section id="memory">
+<h3>Memory<a class="headerlink" href="#memory" title="Link to this heading">¶</a></h3>
+<p>Model parameters, temporary buffers, recurrent state, and simulator state all
+consume memory. On the web, this is especially relevant because the environment
+is more constrained and more visible to end users.</p>
+</section>
+<section id="latency">
+<h3>Latency<a class="headerlink" href="#latency" title="Link to this heading">¶</a></h3>
+<p>Even when average performance looks fine, jitter matters. A control policy that
+sometimes stalls is different from one that runs consistently.</p>
+<p>These concerns are part of the algorithm story, not separate from it. A method
+that is elegant mathematically but too expensive for the intended runtime is not
+actually a good solution.</p>
+</section>
+</section>
+<section id="practical-comparison-questions">
+<h2>Practical comparison questions<a class="headerlink" href="#practical-comparison-questions" title="Link to this heading">¶</a></h2>
+<p>When looking at a robot runtime, a professional reader usually cares about
+questions like these:</p>
+<ul class="simple">
+<li><p>how large is the observation and action representation?</p></li>
+<li><p>how expensive is inference?</p></li>
+<li><p>how much state must be carried between steps?</p></li>
+<li><p>what happens if timing slips?</p></li>
+<li><p>how portable is the controller between runtime hosts?</p></li>
+</ul>
+<p>Those are algorithm questions as much as runtime questions.</p>
 </section>
 <section id="what-to-look-at">
 <h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>how the same robot-framework logic survives different runtime backends</p></li>
-<li><p>how command changes affect setpoints, gait, and policy output</p></li>
-<li><p>how the MuJoCo view and robot state stay synchronized during stepping and reset</p></li>
-<li><p>whether the live browser path behaves like the native path in the ways that matter</p></li>
+<li><p>how command changes affect robot motion</p></li>
+<li><p>whether the robot remains stable under changes in setpoint</p></li>
+<li><p>how smoothly actions appear to be decoded and applied</p></li>
+<li><p>how responsive the runtime feels</p></li>
+<li><p>how much complexity is hidden behind just run the policy</p></li>
+</ul>
+<p>Try to observe the system as both a learner and an engineer:</p>
+<ul class="simple">
+<li><p>as a learner, ask what the robot is trying to do</p></li>
+<li><p>as an engineer, ask what data and computation were required to do it</p></li>
 </ul>
 </section>
 <section id="try-this">
 <h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<section id="experiment-1-command-interpretation">
+<h3>Experiment 1: Command interpretation<a class="headerlink" href="#experiment-1-command-interpretation" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Switch between supported robots and compare the control semantics.</p></li>
-<li><p>Change command inputs and watch how the robot framework interprets them.</p></li>
-<li><p>Reset the simulation and confirm that robot state and viewport state return together.</p></li>
-<li><p>Open the full simulator view if you want the normal app layout instead of the embedded frame.</p></li>
+<li><p>Change the high-level command inputs.</p></li>
+<li><p>Watch how the robot’s behavior changes.</p></li>
+<li><p>Ask what intermediate representation must exist between command and actuation.</p></li>
 </ol>
 </section>
-<section id="implementation-mapping">
-<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
-<p>This mode is intentionally split across crates:</p>
+<section id="experiment-2-stability-and-responsiveness">
+<h3>Experiment 2: Stability and responsiveness<a class="headerlink" href="#experiment-2-stability-and-responsiveness" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Try more aggressive command changes.</p></li>
+<li><p>Observe whether the robot reacts smoothly or abruptly.</p></li>
+<li><p>Think about how action smoothing and decoding affect the visible result.</p></li>
+</ol>
+</section>
+<section id="experiment-3-runtime-mindset">
+<h3>Experiment 3: Runtime mindset<a class="headerlink" href="#experiment-3-runtime-mindset" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Reset and rerun the demo.</p></li>
+<li><p>Focus less on the animation and more on the loop:
+observation, policy, action, world step.</p></li>
+<li><p>Ask where latency, memory use, and portability constraints would matter most.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-mistakes-when-thinking-about-robot-runtimes">
+<h2>Common mistakes when thinking about robot runtimes<a class="headerlink" href="#common-mistakes-when-thinking-about-robot-runtimes" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> owns MuJoCo world/runtime concerns</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_algo::robot_fw</span></code> owns robot semantics and policy decoding</p></li>
-<li><p>browser interop lives in the web runtime glue, not in the algorithm layer</p></li>
+<li><p>assuming the simulator state can be fed directly into the policy without design</p></li>
+<li><p>ignoring time budget and only focusing on mathematical correctness</p></li>
+<li><p>forgetting that action decoding is part of the control pipeline</p></li>
+<li><p>treating browser execution as just UI rather than a real runtime constraint</p></li>
+<li><p>assuming portability happens automatically</p></li>
 </ul>
-<p>That boundary is what keeps the robot framework reusable instead of burying it
-inside one renderer or one simulator host.</p>
+</section>
+<section id="what-this-chapter-is-really-teaching">
+<h2>What this chapter is really teaching<a class="headerlink" href="#what-this-chapter-is-really-teaching" title="Link to this heading">¶</a></h2>
+<p>The earlier tutorials teach individual algorithmic ideas. This chapter teaches
+something broader:</p>
+<p>an algorithm becomes useful only when it can live inside a runtime that respects
+time, memory, interface, and deployment constraints.</p>
+<p>That is the bridge from robotics as theory to robotics as a usable system.</p>
 </section>
 </section>
 
@@ -380,11 +522,29 @@ inside one renderer or one simulator host.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Robot Tutorial</a><ul>
-<li><a class="reference internal" href="#the-runtime-pipeline">The runtime pipeline</a></li>
-<li><a class="reference internal" href="#theoretical-flow">Theoretical flow</a></li>
+<li><a class="reference internal" href="#learning-goals">Learning goals</a></li>
+<li><a class="reference internal" href="#where-this-matters-in-practice">Where this matters in practice</a></li>
+<li><a class="reference internal" href="#the-runtime-loop">The runtime loop</a></li>
+<li><a class="reference internal" href="#why-this-loop-is-more-demanding-than-the-pendulum">Why this loop is more demanding than the pendulum</a></li>
+<li><a class="reference internal" href="#observations-and-actions">Observations and actions</a></li>
+<li><a class="reference internal" href="#portability-as-a-design-goal">Portability as a design goal</a></li>
+<li><a class="reference internal" href="#comparison-to-the-earlier-tutorials">Comparison to the earlier tutorials</a></li>
+<li><a class="reference internal" href="#performance-memory-and-runtime-concerns">Performance, memory, and runtime concerns</a><ul>
+<li><a class="reference internal" href="#compute">Compute</a></li>
+<li><a class="reference internal" href="#memory">Memory</a></li>
+<li><a class="reference internal" href="#latency">Latency</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#practical-comparison-questions">Practical comparison questions</a></li>
 <li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
-<li><a class="reference internal" href="#try-this">Try this</a></li>
-<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a><ul>
+<li><a class="reference internal" href="#experiment-1-command-interpretation">Experiment 1: Command interpretation</a></li>
+<li><a class="reference internal" href="#experiment-2-stability-and-responsiveness">Experiment 2: Stability and responsiveness</a></li>
+<li><a class="reference internal" href="#experiment-3-runtime-mindset">Experiment 3: Runtime mindset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-mistakes-when-thinking-about-robot-runtimes">Common mistakes when thinking about robot runtimes</a></li>
+<li><a class="reference internal" href="#what-this-chapter-is-really-teaching">What this chapter is really teaching</a></li>
 </ul>
 </li>
 </ul>

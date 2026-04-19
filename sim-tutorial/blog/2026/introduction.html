@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Tutorials" href="../../tutorials/index.html"><link rel="prev" title="Blog" href="../index.html">
+        <link rel="prefetch" href="../../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Introducing Rust Robotics - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -251,32 +255,83 @@
           <section class="tex2jax_ignore mathjax_ignore" id="introducing-rust-robotics">
 <h1>Introducing Rust Robotics<a class="headerlink" href="#introducing-rust-robotics" title="Link to this heading">¶</a></h1>
 <div class="article-hero">
-  <div class="article-kicker">Architecture note</div>
+  <div class="article-kicker">Project essay</div>
   <div class="article-subtitle">
-    A Rust workspace for reusable robotics algorithms, interactive simulation, and deployable policy execution.
+    A project about portable robotics algorithms, interactive simulation, and using live systems as a teaching medium.
   </div>
   <div class="article-meta">
     By Yongkyun Shin • 15 Apr 2026
   </div>
 </div><div class="note-shell admonition">
 <p class="admonition-title">In one sentence</p>
-<p>Rust Robotics is an attempt to keep algorithms, training, simulation, and deployment-oriented runtime boundaries in one coherent Rust workspace without collapsing them into one application crate.</p>
+<p>Rust Robotics is an attempt to make robotics algorithms reusable, interactive,
+and accessible across native and web environments without reducing the project
+to either a static library or a simulator demo.</p>
 </div>
-<p>Rust Robotics started from a practical gap: there are many good robotics
-examples, many good simulation environments, and many good one-off control
-implementations, but they are often hard to compare, hard to reuse, and hard to
-move between interactive exploration and something closer to deployment.</p>
-<p>The goal of this repo is to keep those pieces in one coherent workspace.</p>
+<p>Rust Robotics started from a practical gap. Many robotics resources do one thing
+well but leave the other half unfinished.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code> holds the reusable robotics logic</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code> holds the policy-training runtime</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code> holds the portable model handoff types</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> holds the actual simulator, UI, and MuJoCo world</p></li>
+<li><p>some are good algorithm references but hard to interact with</p></li>
+<li><p>some are polished simulators but not good teaching material</p></li>
+<li><p>some are good one-off experiments but hard to reuse</p></li>
+<li><p>some are interesting demos but difficult to port or extend</p></li>
 </ul>
-<p>That split matters because the repo is not just a simulator and it is not just
-an algorithms library. The useful part is the connection between the two.</p>
-<section id="the-workspace-at-a-glance">
-<h2>The Workspace At A Glance<a class="headerlink" href="#the-workspace-at-a-glance" title="Link to this heading">¶</a></h2>
+<p>The project exists to connect those pieces instead of choosing only one.</p>
+<section id="two-products-one-project">
+<h2>Two products, one project<a class="headerlink" href="#two-products-one-project" title="Link to this heading">¶</a></h2>
+<p>Rust Robotics has two equally important outputs.</p>
+<p>The first is a library-oriented body of robotics code: controllers, planners,
+filters, SLAM components, and robot runtime logic that should remain reusable
+instead of being buried inside one application.</p>
+<p>The second is an interactive simulation layer that turns those ideas into
+something explorable. The simulator is not only a visual wrapper. It is part of
+the teaching method. It lets a learner see:</p>
+<ul class="simple">
+<li><p>overshoot instead of just reading about it</p></li>
+<li><p>uncertainty spread instead of only plotting equations</p></li>
+<li><p>path search effort instead of only discussing admissibility</p></li>
+<li><p>drift and correction instead of only reading SLAM derivations</p></li>
+</ul>
+<p>The useful part of the project is the link between the two.</p>
+</section>
+<section id="why-portability-matters-here">
+<h2>Why portability matters here<a class="headerlink" href="#why-portability-matters-here" title="Link to this heading">¶</a></h2>
+<p>Portability is one of the core ideas of the project. That word can sound like a
+software architecture preference, but it is more than that.</p>
+<p>Portable implementations matter because they lower friction in three ways:</p>
+<ol class="arabic simple">
+<li><p>they make it easier to move from experiment to a more realistic runtime</p></li>
+<li><p>they make it easier to compare behavior across native and web environments</p></li>
+<li><p>they make educational material more accessible to people who cannot or do
+not want to set up a full native robotics stack</p></li>
+</ol>
+<p>For a learning-oriented project, this is a big deal. If the same idea can be
+studied in a browser, on a desktop, and in code, the entry barrier drops.</p>
+</section>
+<section id="why-interactivity-matters-just-as-much">
+<h2>Why interactivity matters just as much<a class="headerlink" href="#why-interactivity-matters-just-as-much" title="Link to this heading">¶</a></h2>
+<p>Robotics is one of those subjects where the gap between formulas and behavior is
+large. Many ideas sound clear in notation and then feel confusing in motion.</p>
+<p>That is why interactivity is treated here as a principle rather than an extra:</p>
+<ul class="simple">
+<li><p>a good controller explanation should invite disturbance and retuning</p></li>
+<li><p>a localization explanation should make uncertainty visible</p></li>
+<li><p>a planning explanation should expose search patterns and tradeoffs</p></li>
+<li><p>a SLAM explanation should make drift and correction intuitive</p></li>
+</ul>
+<p>The simulator is not there merely to decorate the documentation. It is there to
+make the documentation more truthful.</p>
+</section>
+<section id="what-this-site-should-feel-like">
+<h2>What this site should feel like<a class="headerlink" href="#what-this-site-should-feel-like" title="Link to this heading">¶</a></h2>
+<p>The long-term ambition for this documentation is not project notes for people
+already inside the repo. It is closer to a compact textbook:</p>
+<ul class="simple">
+<li><p>enough mathematical detail to be useful</p></li>
+<li><p>enough runtime detail to be honest</p></li>
+<li><p>enough visual experimentation to support intuition</p></li>
+<li><p>enough narrative structure to help both students and professionals</p></li>
+</ul>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
 <div class="sd-col sd-d-flex-row docutils">
@@ -284,8 +339,8 @@ an algorithms library. The useful part is the connection between the two.</p>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 Algorithms</div>
-<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code> owns reusable robotics logic: control, localization,
-planning, SLAM, and robot framework semantics.</p>
+<p class="sd-card-text">Portable implementations of robotics methods such as control, localization,
+planning, SLAM, and robot behavior semantics.</p>
 </div>
 </div>
 </div>
@@ -294,7 +349,7 @@ planning, SLAM, and robot framework semantics.</p>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 Training</div>
-<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code> owns PPO training runtime and model optimization.</p>
+<p class="sd-card-text">Learning-oriented runtime for policy optimization and model training.</p>
 </div>
 </div>
 </div>
@@ -303,7 +358,8 @@ Training</div>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 Shared runtime DTOs</div>
-<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code> owns portable snapshots and metrics used across crates.</p>
+<p class="sd-card-text">Portable shared representations that let snapshots and metrics move cleanly
+between parts of the project.</p>
 </div>
 </div>
 </div>
@@ -312,81 +368,44 @@ Shared runtime DTOs</div>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 Interactive simulator</div>
-<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> owns the app shell, MuJoCo world, stepping, rendering, and UI.</p>
+<p class="sd-card-text">Interactive simulation for native and web-based exploration.</p>
 </div>
 </div>
 </div>
 </div>
-</div>
-</section>
-<section id="the-core-idea">
-<h2>The Core Idea<a class="headerlink" href="#the-core-idea" title="Link to this heading">¶</a></h2>
-<p>The central architectural rule is:</p>
-<blockquote>
-<div><p>the simulator owns the world, and the algorithm crate owns robotics semantics</p>
-</div></blockquote>
-<p>That means MuJoCo model/data, viewport state, stepping, and reset live in the
-simulator crate, while command semantics, observations, recurrent state, action
-decoding, and robot-controller logic live in the shared robotics crate.</p>
-<p>This gives the repo a cleaner data flow:</p>
-<ol class="arabic simple">
-<li><p>the world produces raw runtime state</p></li>
-<li><p>the robot framework converts that into an observation</p></li>
-<li><p>an inference backend produces a policy output</p></li>
-<li><p>the robot framework decodes that output into actuation</p></li>
-<li><p>the simulator applies the actuation back into the world</p></li>
-</ol>
-<p>The result is that native and web paths can share the controller logic even when
-they do not share the renderer or runtime internals.</p>
-</section>
-<section id="a-workspace-not-a-single-app">
-<h2>A Workspace, Not A Single App<a class="headerlink" href="#a-workspace-not-a-single-app" title="Link to this heading">¶</a></h2>
-<p>The pendulum path shows why the workspace split is useful.</p>
-<p>The same task can be:</p>
-<ul class="simple">
-<li><p>controlled with LQR, PID, or MPC from <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code></p></li>
-<li><p>trained with PPO from <code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code></p></li>
-<li><p>exported as a portable <code class="docutils literal notranslate"><span class="pre">PolicySnapshot</span></code> from <code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code></p></li>
-<li><p>executed inside the interactive app in <code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code></p></li>
-</ul>
-<p>That makes the project useful both as:</p>
-<ul class="simple">
-<li><p>a teaching and visualization tool</p></li>
-<li><p>a regression harness for algorithm changes</p></li>
-<li><p>a place to compare classical and learned controllers under the same plant</p></li>
-</ul>
-<div class="note-shell admonition">
-<p class="admonition-title">Why this architecture is useful</p>
-<p>The same pendulum task can be controlled with LQR, PID, or MPC from <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, trained with PPO in <code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code>, serialized in <code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code>, and executed in the interactive UI from <code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code>.</p>
 </div>
 </section>
 <section id="why-rust">
 <h2>Why Rust<a class="headerlink" href="#why-rust" title="Link to this heading">¶</a></h2>
 <p>Rust is a good fit here for reasons that are more specific than general
 language preference.</p>
-<p>First, the repo benefits from explicit crate boundaries. This workspace wants a
-real distinction between reusable algorithms, training runtime, simulator UI,
-and portable shared types. Rust makes that separation cheap and visible.</p>
-<p>Second, the code is full of “almost shared, but not quite” responsibilities:
-native vs web runtime, MuJoCo world vs robot semantics, learned policy vs
-classical control, dense math vs UI state. Rust pushes those seams into actual
-types and modules instead of leaving them as conventions.</p>
-<p>Third, the project wants to stay close to deployment concerns. Even when the
-simulator is the visible product, the interesting work is usually at the
-boundary where control, inference, and world state meet.</p>
-</section>
-<section id="what-comes-next">
-<h2>What Comes Next<a class="headerlink" href="#what-comes-next" title="Link to this heading">¶</a></h2>
-<p>The next stage for this documentation site is straightforward:</p>
+<p>First, the project benefits from explicit boundaries between reusable logic and
+environment-specific runtime code. Rust makes those boundaries concrete instead
+of leaving them as convention.</p>
+<p>Second, many of the interesting robotics seams are exactly the kind of seams
+Rust handles well:</p>
 <ul class="simple">
-<li><p>architecture pages for <code class="docutils literal notranslate"><span class="pre">algo</span></code>, <code class="docutils literal notranslate"><span class="pre">sim</span></code>, <code class="docutils literal notranslate"><span class="pre">train</span></code>, and <code class="docutils literal notranslate"><span class="pre">core</span></code></p></li>
-<li><p>longer writeups for the pendulum, robot framework, and MuJoCo integration</p></li>
-<li><p>generated API links where they add value</p></li>
-<li><p>implementation notes for the native/web split</p></li>
+<li><p>native versus web runtime</p></li>
+<li><p>simulator world versus algorithm logic</p></li>
+<li><p>learned policies versus analytical control laws</p></li>
+<li><p>interactive experimentation versus reusable library code</p></li>
 </ul>
-<p>The repo already has a lot of technical content in source comments and rustdoc.
-This site is the place to turn that into a guided narrative instead of expecting
-readers to assemble the whole system from the code alone.</p>
+<p>Third, the project wants to stay close to practical deployment concerns even
+when the simulator is the most visible part. Robotics software rarely stops at
+the equation. It has to live inside a runtime.</p>
+</section>
+<section id="what-readers-should-expect-next">
+<h2>What readers should expect next<a class="headerlink" href="#what-readers-should-expect-next" title="Link to this heading">¶</a></h2>
+<p>The direction of the documentation site is straightforward:</p>
+<ul class="simple">
+<li><p>deeper tutorials that read like compact textbook chapters</p></li>
+<li><p>stronger focus on complexity, memory, and practical behavior</p></li>
+<li><p>better interpretation of simulator output</p></li>
+<li><p>enough implementation detail to stay honest, but not so much that the reader
+has to study the repo structure before learning the robotics content</p></li>
+</ul>
+<p>The source already contains technical details. The role of this site is to turn
+those details into guided understanding.</p>
 </section>
 </section>
 
@@ -446,11 +465,12 @@ readers to assemble the whole system from the code alone.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Introducing Rust Robotics</a><ul>
-<li><a class="reference internal" href="#the-workspace-at-a-glance">The Workspace At A Glance</a></li>
-<li><a class="reference internal" href="#the-core-idea">The Core Idea</a></li>
-<li><a class="reference internal" href="#a-workspace-not-a-single-app">A Workspace, Not A Single App</a></li>
+<li><a class="reference internal" href="#two-products-one-project">Two products, one project</a></li>
+<li><a class="reference internal" href="#why-portability-matters-here">Why portability matters here</a></li>
+<li><a class="reference internal" href="#why-interactivity-matters-just-as-much">Why interactivity matters just as much</a></li>
+<li><a class="reference internal" href="#what-this-site-should-feel-like">What this site should feel like</a></li>
 <li><a class="reference internal" href="#why-rust">Why Rust</a></li>
-<li><a class="reference internal" href="#what-comes-next">What Comes Next</a></li>
+<li><a class="reference internal" href="#what-readers-should-expect-next">What readers should expect next</a></li>
 </ul>
 </li>
 </ul>

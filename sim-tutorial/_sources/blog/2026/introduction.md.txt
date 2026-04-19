@@ -2,9 +2,9 @@
 
 ```{raw} html
 <div class="article-hero">
-  <div class="article-kicker">Architecture note</div>
+  <div class="article-kicker">Project essay</div>
   <div class="article-subtitle">
-    A Rust workspace for reusable robotics algorithms, interactive simulation, and deployable policy execution.
+    A project about portable robotics algorithms, interactive simulation, and using live systems as a teaching medium.
   </div>
   <div class="article-meta">
     By Yongkyun Shin • 15 Apr 2026
@@ -15,25 +15,79 @@
 ```{admonition} In one sentence
 :class: note-shell
 
-Rust Robotics is an attempt to keep algorithms, training, simulation, and deployment-oriented runtime boundaries in one coherent Rust workspace without collapsing them into one application crate.
+Rust Robotics is an attempt to make robotics algorithms reusable, interactive,
+and accessible across native and web environments without reducing the project
+to either a static library or a simulator demo.
 ```
 
-Rust Robotics started from a practical gap: there are many good robotics
-examples, many good simulation environments, and many good one-off control
-implementations, but they are often hard to compare, hard to reuse, and hard to
-move between interactive exploration and something closer to deployment.
+Rust Robotics started from a practical gap. Many robotics resources do one thing
+well but leave the other half unfinished.
 
-The goal of this repo is to keep those pieces in one coherent workspace.
+- some are good algorithm references but hard to interact with
+- some are polished simulators but not good teaching material
+- some are good one-off experiments but hard to reuse
+- some are interesting demos but difficult to port or extend
 
-- `rust_robotics_algo` holds the reusable robotics logic
-- `rust_robotics_train` holds the policy-training runtime
-- `rust_robotics_core` holds the portable model handoff types
-- `rust_robotics_sim` holds the actual simulator, UI, and MuJoCo world
+The project exists to connect those pieces instead of choosing only one.
 
-That split matters because the repo is not just a simulator and it is not just
-an algorithms library. The useful part is the connection between the two.
+## Two products, one project
 
-## The Workspace At A Glance
+Rust Robotics has two equally important outputs.
+
+The first is a library-oriented body of robotics code: controllers, planners,
+filters, SLAM components, and robot runtime logic that should remain reusable
+instead of being buried inside one application.
+
+The second is an interactive simulation layer that turns those ideas into
+something explorable. The simulator is not only a visual wrapper. It is part of
+the teaching method. It lets a learner see:
+
+- overshoot instead of just reading about it
+- uncertainty spread instead of only plotting equations
+- path search effort instead of only discussing admissibility
+- drift and correction instead of only reading SLAM derivations
+
+The useful part of the project is the link between the two.
+
+## Why portability matters here
+
+Portability is one of the core ideas of the project. That word can sound like a
+software architecture preference, but it is more than that.
+
+Portable implementations matter because they lower friction in three ways:
+
+1. they make it easier to move from experiment to a more realistic runtime
+2. they make it easier to compare behavior across native and web environments
+3. they make educational material more accessible to people who cannot or do
+   not want to set up a full native robotics stack
+
+For a learning-oriented project, this is a big deal. If the same idea can be
+studied in a browser, on a desktop, and in code, the entry barrier drops.
+
+## Why interactivity matters just as much
+
+Robotics is one of those subjects where the gap between formulas and behavior is
+large. Many ideas sound clear in notation and then feel confusing in motion.
+
+That is why interactivity is treated here as a principle rather than an extra:
+
+- a good controller explanation should invite disturbance and retuning
+- a localization explanation should make uncertainty visible
+- a planning explanation should expose search patterns and tradeoffs
+- a SLAM explanation should make drift and correction intuitive
+
+The simulator is not there merely to decorate the documentation. It is there to
+make the documentation more truthful.
+
+## What this site should feel like
+
+The long-term ambition for this documentation is not project notes for people
+already inside the repo. It is closer to a compact textbook:
+
+- enough mathematical detail to be useful
+- enough runtime detail to be honest
+- enough visual experimentation to support intuition
+- enough narrative structure to help both students and professionals
 
 ::::{grid} 1 1 2 2
 :gutter: 2
@@ -41,100 +95,60 @@ an algorithms library. The useful part is the connection between the two.
 :::{grid-item-card} Algorithms
 :class-card: module-card
 
-`rust_robotics_algo` owns reusable robotics logic: control, localization,
-planning, SLAM, and robot framework semantics.
+Portable implementations of robotics methods such as control, localization,
+planning, SLAM, and robot behavior semantics.
 :::
 
 :::{grid-item-card} Training
 :class-card: module-card
 
-`rust_robotics_train` owns PPO training runtime and model optimization.
+Learning-oriented runtime for policy optimization and model training.
 :::
 
 :::{grid-item-card} Shared runtime DTOs
 :class-card: module-card
 
-`rust_robotics_core` owns portable snapshots and metrics used across crates.
+Portable shared representations that let snapshots and metrics move cleanly
+between parts of the project.
 :::
 
 :::{grid-item-card} Interactive simulator
 :class-card: module-card
 
-`rust_robotics_sim` owns the app shell, MuJoCo world, stepping, rendering, and UI.
+Interactive simulation for native and web-based exploration.
 :::
 ::::
-
-## The Core Idea
-
-The central architectural rule is:
-
-> the simulator owns the world, and the algorithm crate owns robotics semantics
-
-That means MuJoCo model/data, viewport state, stepping, and reset live in the
-simulator crate, while command semantics, observations, recurrent state, action
-decoding, and robot-controller logic live in the shared robotics crate.
-
-This gives the repo a cleaner data flow:
-
-1. the world produces raw runtime state
-2. the robot framework converts that into an observation
-3. an inference backend produces a policy output
-4. the robot framework decodes that output into actuation
-5. the simulator applies the actuation back into the world
-
-The result is that native and web paths can share the controller logic even when
-they do not share the renderer or runtime internals.
-
-## A Workspace, Not A Single App
-
-The pendulum path shows why the workspace split is useful.
-
-The same task can be:
-
-- controlled with LQR, PID, or MPC from `rust_robotics_algo`
-- trained with PPO from `rust_robotics_train`
-- exported as a portable `PolicySnapshot` from `rust_robotics_core`
-- executed inside the interactive app in `rust_robotics_sim`
-
-That makes the project useful both as:
-
-- a teaching and visualization tool
-- a regression harness for algorithm changes
-- a place to compare classical and learned controllers under the same plant
-
-```{admonition} Why this architecture is useful
-:class: note-shell
-
-The same pendulum task can be controlled with LQR, PID, or MPC from `rust_robotics_algo`, trained with PPO in `rust_robotics_train`, serialized in `rust_robotics_core`, and executed in the interactive UI from `rust_robotics_sim`.
-```
 
 ## Why Rust
 
 Rust is a good fit here for reasons that are more specific than general
 language preference.
 
-First, the repo benefits from explicit crate boundaries. This workspace wants a
-real distinction between reusable algorithms, training runtime, simulator UI,
-and portable shared types. Rust makes that separation cheap and visible.
+First, the project benefits from explicit boundaries between reusable logic and
+environment-specific runtime code. Rust makes those boundaries concrete instead
+of leaving them as convention.
 
-Second, the code is full of "almost shared, but not quite" responsibilities:
-native vs web runtime, MuJoCo world vs robot semantics, learned policy vs
-classical control, dense math vs UI state. Rust pushes those seams into actual
-types and modules instead of leaving them as conventions.
+Second, many of the interesting robotics seams are exactly the kind of seams
+Rust handles well:
 
-Third, the project wants to stay close to deployment concerns. Even when the
-simulator is the visible product, the interesting work is usually at the
-boundary where control, inference, and world state meet.
+- native versus web runtime
+- simulator world versus algorithm logic
+- learned policies versus analytical control laws
+- interactive experimentation versus reusable library code
 
-## What Comes Next
+Third, the project wants to stay close to practical deployment concerns even
+when the simulator is the most visible part. Robotics software rarely stops at
+the equation. It has to live inside a runtime.
 
-The next stage for this documentation site is straightforward:
+## What readers should expect next
 
-- architecture pages for `algo`, `sim`, `train`, and `core`
-- longer writeups for the pendulum, robot framework, and MuJoCo integration
-- generated API links where they add value
-- implementation notes for the native/web split
+The direction of the documentation site is straightforward:
 
-The repo already has a lot of technical content in source comments and rustdoc.
-This site is the place to turn that into a guided narrative instead of expecting
-readers to assemble the whole system from the code alone.
+- deeper tutorials that read like compact textbook chapters
+- stronger focus on complexity, memory, and practical behavior
+- better interpretation of simulator output
+- enough implementation detail to stay honest, but not so much that the reader
+  has to study the repo structure before learning the robotics content
+
+The source already contains technical details. The role of this site is to turn
+those details into guided understanding.

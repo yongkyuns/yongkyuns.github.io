@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Project Overview" href="overview.html">
+        <link rel="prefetch" href="static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="static/custom.css?v=fa1841b5" />
     
     
 
@@ -174,7 +175,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -243,7 +247,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
@@ -251,21 +255,59 @@
           <section class="tex2jax_ignore mathjax_ignore" id="rust-robotics">
 <h1>Rust Robotics<a class="headerlink" href="#rust-robotics" title="Link to this heading">¶</a></h1>
 <section class="hero-band">
-  <div class="hero-kicker">Documentation</div>
-  <h1 class="hero-title">Rust Robotics</h1>
-  <p class="hero-lead">
-    A documentation site for a Rust workspace focused on reusable robotics algorithms,
-    interactive simulation, policy training, and deployable runtime boundaries.
-  </p>
-</section><div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+  <div class="hero-brand">
+    <div class="hero-copy">
+      <div class="hero-kicker">Portable Algorithms + Interactive Simulation</div>
+      <h1 class="hero-title">Rust Robotics</h1>
+      <p class="hero-lead">
+        Rust Robotics is a project for learning, comparing, and demonstrating robotics
+        algorithms through reusable implementations and live simulations that run in
+        native and web environments.
+      </p>
+    </div>
+  <img class="hero-logo" src="static/RustyRobot.png" alt="RustyRobot mascot" />
+</div>
+</section><p>Rust Robotics has two practical goals:</p>
+<ul class="simple">
+<li><p>a library of robotics algorithm implementations</p></li>
+<li><p>an interactive simulation layer for learning, testing, and demonstration</p></li>
+</ul>
+<p>This site is written to be readable by beginners while still being useful to
+experienced engineers. The main focus is not internal project structure. The
+focus is:</p>
+<ul class="simple">
+<li><p>what each algorithm is for</p></li>
+<li><p>what assumptions it makes</p></li>
+<li><p>where it is used</p></li>
+<li><p>how it compares to alternatives</p></li>
+<li><p>what it costs in compute and memory</p></li>
+<li><p>and how to interpret its behavior in the simulator</p></li>
+</ul>
+<section id="start-here">
+<h2>Start here<a class="headerlink" href="#start-here" title="Link to this heading">¶</a></h2>
+<p>If you are new to the project, start with:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="overview.html"><span class="doc">Project Overview</span></a></p></li>
+<li><p><a class="reference internal" href="tutorials/pendulum.html"><span class="doc">Control Systems Tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="tutorials/localization.html"><span class="doc">Localization Tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="tutorials/path_planning.html"><span class="doc">Path Planning Tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="tutorials/slam.html"><span class="doc">SLAM Tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="tutorials/robot.html"><span class="doc">Robot Tutorial</span></a></p></li>
+</ol>
+<p>That order moves from smaller, easier-to-isolate algorithmic ideas toward a
+larger runtime loop.</p>
+</section>
+<section id="how-to-use-this-site">
+<h2>How to use this site<a class="headerlink" href="#how-to-use-this-site" title="Link to this heading">¶</a></h2>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-3 sd-g-xs-3 sd-g-sm-3 sd-g-md-3 sd-g-lg-3 docutils">
 <div class="sd-col sd-d-flex-row docutils">
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm landing-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-Workspace architecture</div>
-<p class="sd-card-text">Understand how <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, <code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code>,
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code>, and <code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> fit together.</p>
+Getting started</div>
+<p class="sd-card-text">Read the short overview first for the project goals, audience, and the intended
+way to use these notes.</p>
 <p class="sd-card-text"><a class="reference internal" href="overview.html"><span class="doc">Project Overview</span></a></p>
 </div>
 </div>
@@ -274,10 +316,10 @@ Workspace architecture</div>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm landing-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-Blog and writeups</div>
-<p class="sd-card-text">Read long-form documentation pages written as project notes, architecture essays,
-and implementation walkthroughs.</p>
-<p class="sd-card-text"><a class="reference internal" href="blog/index.html"><span class="doc">Blog</span></a></p>
+Tutorials</div>
+<p class="sd-card-text">The tutorial pages are the core of the site. Each chapter combines theory,
+algorithm comparison, complexity discussion, and a live simulator.</p>
+<p class="sd-card-text"><a class="reference internal" href="tutorials/index.html"><span class="doc">Tutorials</span></a></p>
 </div>
 </div>
 </div>
@@ -285,26 +327,52 @@ and implementation walkthroughs.</p>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm landing-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-Interactive tutorials</div>
-<p class="sd-card-text">Follow simulator-specific walkthroughs and open the live egui app directly from
-the documentation pages.</p>
-<p class="sd-card-text"><a class="reference internal" href="tutorials/index.html"><span class="doc">Tutorials</span></a></p>
+Essays</div>
+<p class="sd-card-text">The blog section is for broader project essays and higher-level narrative
+writing that does not fit naturally into a single tutorial chapter.</p>
+<p class="sd-card-text"><a class="reference internal" href="blog/index.html"><span class="doc">Blog</span></a></p>
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="note-shell admonition">
-<p class="admonition-title">Why this site exists</p>
-<p>This site is separate from the repo’s existing <code class="docutils literal notranslate"><span class="pre">docs/</span></code> folder.</p>
-<p>In this repository:</p>
+<p class="admonition-title">What makes this project different</p>
+<p>The core educational promise of Rust Robotics is that the same ideas should be
+visible in multiple settings:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">docs/</span></code> is the built simulator web bundle used for GitHub Pages hosting</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">site_docs/</span></code> is the authored documentation source for project pages like this one</p></li>
+<li><p>as reusable Rust implementations</p></li>
+<li><p>as native interactive applications</p></li>
+<li><p>as web-accessible simulations</p></li>
+<li><p>and, where appropriate, as portable logic that can move toward real hardware</p></li>
 </ul>
 </div>
+</section>
+<section id="main-topics">
+<h2>Main topics<a class="headerlink" href="#main-topics" title="Link to this heading">¶</a></h2>
+<p>The core subjects covered right now are:</p>
+<ul class="simple">
+<li><p>control systems</p></li>
+<li><p>localization</p></li>
+<li><p>path planning</p></li>
+<li><p>SLAM</p></li>
+<li><p>robot runtime execution</p></li>
+</ul>
+<p>The tutorials are meant to feel closer to compact textbook chapters than to
+feature walkthroughs.</p>
+</section>
+<section id="reference-and-implementation-details">
+<h2>Reference and implementation details<a class="headerlink" href="#reference-and-implementation-details" title="Link to this heading">¶</a></h2>
+<p>This site is not trying to replace rustdoc. Rustdoc remains the right place for:</p>
+<ul class="simple">
+<li><p>module-level API reference</p></li>
+<li><p>source-oriented implementation details</p></li>
+<li><p>symbol navigation</p></li>
+</ul>
+<p>This site is the explanatory layer on top of that.</p>
 <div class="toctree-wrapper compound">
 </div>
+</section>
 </section>
 
         </article>
@@ -340,8 +408,30 @@ the documentation pages.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Rust Robotics</a><ul>
+<li><a class="reference internal" href="#start-here">Start here</a></li>
+<li><a class="reference internal" href="#how-to-use-this-site">How to use this site</a></li>
+<li><a class="reference internal" href="#main-topics">Main topics</a></li>
+<li><a class="reference internal" href="#reference-and-implementation-details">Reference and implementation details</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

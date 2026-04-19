@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Robot Tutorial" href="robot.html"><link rel="prev" title="Path Planning Tutorial" href="path_planning.html">
+        <link rel="prefetch" href="../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>SLAM Tutorial - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,8 +254,9 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="slam-tutorial">
 <h1>SLAM Tutorial<a class="headerlink" href="#slam-tutorial" title="Link to this heading">¶</a></h1>
-<p>The SLAM demo moves one step beyond localization: the robot is estimating its
-own pose while also building or refining the map it uses.</p>
+<p>SLAM, simultaneous localization and mapping, is one of the defining problems of
+robotics because it forces two uncertainties to interact: the robot does not
+know exactly where it is, and it does not know the map perfectly either.</p>
 <div class="sim-embed-card">
   <iframe
     class="sim-embed-frame"
@@ -260,7 +265,31 @@ own pose while also building or refining the map it uses.</p>
     title="Rust Robotics SLAM simulator"
     loading="lazy"
   ></iframe>
-</div><section id="the-joint-estimation-problem">
+</div><section id="learning-goals">
+<h2>Learning goals<a class="headerlink" href="#learning-goals" title="Link to this heading">¶</a></h2>
+<p>This chapter is meant to make the following ideas concrete:</p>
+<ul class="simple">
+<li><p>why SLAM is harder than localization alone</p></li>
+<li><p>how pose uncertainty and map uncertainty influence each other</p></li>
+<li><p>how EKF-SLAM and graph-SLAM think about the problem differently</p></li>
+<li><p>why loop closure is so powerful</p></li>
+<li><p>what computational structure makes SLAM expensive in practice</p></li>
+</ul>
+</section>
+<section id="where-slam-is-used">
+<h2>Where SLAM is used<a class="headerlink" href="#where-slam-is-used" title="Link to this heading">¶</a></h2>
+<p>SLAM is central in robotics whenever a robot must operate in an environment that
+is not perfectly known in advance:</p>
+<ul class="simple">
+<li><p>autonomous vehicles</p></li>
+<li><p>drones</p></li>
+<li><p>mobile service robots</p></li>
+<li><p>warehouse and logistics robots</p></li>
+<li><p>handheld mapping systems</p></li>
+<li><p>AR and spatial computing systems</p></li>
+</ul>
+</section>
+<section id="the-joint-estimation-problem">
 <h2>The joint estimation problem<a class="headerlink" href="#the-joint-estimation-problem" title="Link to this heading">¶</a></h2>
 <p>SLAM estimates both trajectory and map:</p>
 <div class="math-wrapper docutils container">
@@ -271,11 +300,12 @@ p(x_{1:t}, m \mid z_{1:t}, u_{1:t})
 </div>
 <p>That is why the problem is harder than localization. Errors in pose corrupt map
 estimates, and map errors feed back into later pose estimates.</p>
+<p>The central conceptual jump is that pose and map cannot be treated as
+independent. Good SLAM methods succeed because they preserve and exploit that
+coupling.</p>
 </section>
-<section id="theoretical-derivations">
-<h2>Theoretical derivations<a class="headerlink" href="#theoretical-derivations" title="Link to this heading">¶</a></h2>
-<section id="ekf-slam">
-<h3>EKF-SLAM<a class="headerlink" href="#ekf-slam" title="Link to this heading">¶</a></h3>
+<section id="ekf-slam-a-probabilistic-filter-view">
+<h2>EKF-SLAM: a probabilistic filter view<a class="headerlink" href="#ekf-slam-a-probabilistic-filter-view" title="Link to this heading">¶</a></h2>
 <p>EKF-SLAM maintains a joint Gaussian over robot pose and landmarks. Prediction
 propagates the motion model and grows covariance. Measurement updates use the
 Kalman gain to reduce uncertainty when observations arrive.</p>
@@ -289,50 +319,184 @@ K = P H^T (H P H^T + R)^{-1}
 <p>followed by the usual mean and covariance correction. The key structural point
 is that pose-landmark cross-covariances are not incidental; they are the thing
 that lets a better pose estimate improve landmark estimates and vice versa.</p>
+<section id="cost-profile">
+<h3>Cost profile<a class="headerlink" href="#cost-profile" title="Link to this heading">¶</a></h3>
+<p>EKF-SLAM is conceptually elegant, but it becomes expensive as the number of
+landmarks grows. Dense covariance structure pushes both memory and runtime
+upward.</p>
+<p>At a high level:</p>
+<ul class="simple">
+<li><p>memory can grow quadratically with the number of landmarks</p></li>
+<li><p>updates can also become increasingly expensive because the covariance is large</p></li>
+</ul>
+<p>That is one reason why graph-based formulations became so influential.</p>
 </section>
-<section id="graph-slam">
-<h3>Graph SLAM<a class="headerlink" href="#graph-slam" title="Link to this heading">¶</a></h3>
+</section>
+<section id="graph-slam-compared-to-ekf-slam">
+<h2>Graph SLAM compared to EKF-SLAM<a class="headerlink" href="#graph-slam-compared-to-ekf-slam" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Formulation</p></th>
+<th class="head"><p>Main object</p></th>
+<th class="head"><p>Strength</p></th>
+<th class="head"><p>Main cost issue</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>EKF-SLAM</p></td>
+<td><p>joint Gaussian belief</p></td>
+<td><p>direct probabilistic interpretation</p></td>
+<td><p>dense covariance growth</p></td>
+</tr>
+<tr class="row-odd"><td><p>Graph SLAM</p></td>
+<td><p>sparse optimization problem</p></td>
+<td><p>strong global consistency and scalability</p></td>
+<td><p>iterative nonlinear optimization</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="graph-slam-a-sparse-optimization-view">
+<h2>Graph SLAM: a sparse optimization view<a class="headerlink" href="#graph-slam-a-sparse-optimization-view" title="Link to this heading">¶</a></h2>
 <p>Graph SLAM reframes the problem as sparse nonlinear least squares. Robot poses
 and landmarks become nodes, and measurements become constraints. The optimizer
 tries to minimize the residual energy across the whole graph.</p>
 <p>That is why loop closure is so powerful in graph formulations: one good
 constraint can redistribute error across a long accumulated trajectory.</p>
+<section id="id1">
+<h3>Cost profile<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>Graph-based methods are attractive because many SLAM problems are sparse:</p>
+<ul class="simple">
+<li><p>each observation links only a small subset of variables</p></li>
+<li><p>many constraints are local</p></li>
+<li><p>sparse linear algebra scales better than dense covariance updates in many settings</p></li>
+</ul>
+<p>That does not make graph SLAM free, but it often makes larger problems more
+tractable than dense filter formulations.</p>
 </section>
 </section>
-<section id="what-this-simulator-is-for">
-<h2>What this simulator is for<a class="headerlink" href="#what-this-simulator-is-for" title="Link to this heading">¶</a></h2>
-<p>SLAM becomes easier to understand when you can see the coupling directly:</p>
+<section id="what-to-look-at-in-the-simulator">
+<h2>What to look at in the simulator<a class="headerlink" href="#what-to-look-at-in-the-simulator" title="Link to this heading">¶</a></h2>
+<p>The most important things to watch are not just the final map shape, but the
+intermediate behavior:</p>
 <ul class="simple">
 <li><p>pose errors distort the map</p></li>
 <li><p>map errors distort future pose estimates</p></li>
 <li><p>loop closure is valuable because it corrects both at once</p></li>
+<li><p>drift accumulates before strong corrections arrive</p></li>
+<li><p>landmark placement changes with trajectory quality</p></li>
 </ul>
-<p>This demo is there to make that coupling visible.</p>
 </section>
-<section id="what-to-look-at">
-<h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
+<section id="why-slam-is-such-an-important-teaching-topic">
+<h2>Why SLAM is such an important teaching topic<a class="headerlink" href="#why-slam-is-such-an-important-teaching-topic" title="Link to this heading">¶</a></h2>
+<p>SLAM forces several robotics ideas into one place:</p>
 <ul class="simple">
-<li><p>drift accumulating before corrections arrive</p></li>
-<li><p>landmark placement relative to the estimated trajectory</p></li>
-<li><p>how uncertainty evolves when the robot revisits familiar areas</p></li>
-<li><p>how graph- or filter-based updates reshape the map after new evidence arrives</p></li>
+<li><p>uncertainty propagation</p></li>
+<li><p>data association</p></li>
+<li><p>numerical optimization</p></li>
+<li><p>linearization</p></li>
+<li><p>memory scaling</p></li>
+<li><p>delayed global correction</p></li>
 </ul>
+<p>That makes it one of the best examples of why robotics is rarely just geometry
+or just probability or just control. It is usually all of them together.</p>
+</section>
+<section id="practical-tradeoffs">
+<h2>Practical tradeoffs<a class="headerlink" href="#practical-tradeoffs" title="Link to this heading">¶</a></h2>
+<section id="filter-viewpoint">
+<h3>Filter viewpoint<a class="headerlink" href="#filter-viewpoint" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>often conceptually closer to recursive estimation</p></li>
+<li><p>good for understanding uncertainty propagation directly</p></li>
+<li><p>can become expensive as the state grows</p></li>
+</ul>
+</section>
+<section id="graph-viewpoint">
+<h3>Graph viewpoint<a class="headerlink" href="#graph-viewpoint" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>often better for larger maps and longer trajectories</p></li>
+<li><p>makes loop closure especially natural</p></li>
+<li><p>depends heavily on optimization quality and data association</p></li>
+</ul>
+</section>
+</section>
+<section id="complexity-and-memory-summary">
+<h2>Complexity and memory summary<a class="headerlink" href="#complexity-and-memory-summary" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Formulation</p></th>
+<th class="head"><p>Main representation</p></th>
+<th class="head"><p>Typical strength</p></th>
+<th class="head"><p>Main scaling concern</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>EKF-SLAM</p></td>
+<td><p>joint Gaussian</p></td>
+<td><p>clear probabilistic interpretation</p></td>
+<td><p>dense covariance growth</p></td>
+</tr>
+<tr class="row-odd"><td><p>Graph SLAM</p></td>
+<td><p>sparse factor graph</p></td>
+<td><p>strong global correction and scalability</p></td>
+<td><p>nonlinear optimization cost</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="try-this">
 <h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<section id="experiment-1-watch-drift-form">
+<h3>Experiment 1: Watch drift form<a class="headerlink" href="#experiment-1-watch-drift-form" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Let the robot move without intervention and watch drift accumulate.</p></li>
-<li><p>Focus on repeated viewpoints or revisits to see when the estimate tightens again.</p></li>
-<li><p>Compare the map before and after a strong correction event.</p></li>
-<li><p>Reset and rerun to see how the same algorithm behaves under different random conditions.</p></li>
+<li><p>Start the demo and let the robot move.</p></li>
+<li><p>Pay attention to how small pose errors accumulate into visible map distortion.</p></li>
 </ol>
 </section>
-<section id="implementation-mapping">
-<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
-<p>The estimation and optimization logic stays in <code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code>, while the
-simulator owns the world state, plotting, and interactive controls. That split
-keeps the math-heavy code from being tangled into the UI and makes it easier to
-test SLAM logic independently of the app.</p>
+<section id="experiment-2-look-for-correction-events">
+<h3>Experiment 2: Look for correction events<a class="headerlink" href="#experiment-2-look-for-correction-events" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Focus on revisits or repeated observations.</p></li>
+<li><p>Notice when the map and trajectory become more consistent again.</p></li>
+<li><p>Ask what new information enabled that correction.</p></li>
+</ol>
+</section>
+<section id="experiment-3-compare-local-consistency-and-global-consistency">
+<h3>Experiment 3: Compare local consistency and global consistency<a class="headerlink" href="#experiment-3-compare-local-consistency-and-global-consistency" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Watch the map before a strong correction event.</p></li>
+<li><p>Then watch how the entire structure changes after new evidence arrives.</p></li>
+<li><p>Notice that good global consistency may require revising earlier local beliefs.</p></li>
+</ol>
+</section>
+<section id="experiment-4-think-about-cost">
+<h3>Experiment 4: Think about cost<a class="headerlink" href="#experiment-4-think-about-cost" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Imagine scaling the same problem to many more landmarks and poses.</p></li>
+<li><p>Ask whether dense covariance or sparse graph structure seems more practical.</p></li>
+<li><p>Use the simulator behavior as a prompt for algorithmic scaling intuition.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-mistakes-when-studying-slam">
+<h2>Common mistakes when studying SLAM<a class="headerlink" href="#common-mistakes-when-studying-slam" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>treating map building and localization as separate problems</p></li>
+<li><p>ignoring cross-correlation structure</p></li>
+<li><p>focusing only on final map appearance</p></li>
+<li><p>assuming loop closure is a cosmetic improvement instead of a structural correction</p></li>
+<li><p>forgetting that data association quality can dominate everything else</p></li>
+</ul>
+</section>
+<section id="what-this-chapter-is-really-teaching">
+<h2>What this chapter is really teaching<a class="headerlink" href="#what-this-chapter-is-really-teaching" title="Link to this heading">¶</a></h2>
+<p>SLAM is the point where uncertainty becomes geometric and geometry becomes
+probabilistic. If you understand why pose errors corrupt maps and why map
+corrections improve pose, you understand the heart of the SLAM problem.</p>
 </section>
 </section>
 
@@ -392,16 +556,35 @@ test SLAM logic independently of the app.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">SLAM Tutorial</a><ul>
+<li><a class="reference internal" href="#learning-goals">Learning goals</a></li>
+<li><a class="reference internal" href="#where-slam-is-used">Where SLAM is used</a></li>
 <li><a class="reference internal" href="#the-joint-estimation-problem">The joint estimation problem</a></li>
-<li><a class="reference internal" href="#theoretical-derivations">Theoretical derivations</a><ul>
-<li><a class="reference internal" href="#ekf-slam">EKF-SLAM</a></li>
-<li><a class="reference internal" href="#graph-slam">Graph SLAM</a></li>
+<li><a class="reference internal" href="#ekf-slam-a-probabilistic-filter-view">EKF-SLAM: a probabilistic filter view</a><ul>
+<li><a class="reference internal" href="#cost-profile">Cost profile</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#what-this-simulator-is-for">What this simulator is for</a></li>
-<li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
-<li><a class="reference internal" href="#try-this">Try this</a></li>
-<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+<li><a class="reference internal" href="#graph-slam-compared-to-ekf-slam">Graph SLAM compared to EKF-SLAM</a></li>
+<li><a class="reference internal" href="#graph-slam-a-sparse-optimization-view">Graph SLAM: a sparse optimization view</a><ul>
+<li><a class="reference internal" href="#id1">Cost profile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-to-look-at-in-the-simulator">What to look at in the simulator</a></li>
+<li><a class="reference internal" href="#why-slam-is-such-an-important-teaching-topic">Why SLAM is such an important teaching topic</a></li>
+<li><a class="reference internal" href="#practical-tradeoffs">Practical tradeoffs</a><ul>
+<li><a class="reference internal" href="#filter-viewpoint">Filter viewpoint</a></li>
+<li><a class="reference internal" href="#graph-viewpoint">Graph viewpoint</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#complexity-and-memory-summary">Complexity and memory summary</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a><ul>
+<li><a class="reference internal" href="#experiment-1-watch-drift-form">Experiment 1: Watch drift form</a></li>
+<li><a class="reference internal" href="#experiment-2-look-for-correction-events">Experiment 2: Look for correction events</a></li>
+<li><a class="reference internal" href="#experiment-3-compare-local-consistency-and-global-consistency">Experiment 3: Compare local consistency and global consistency</a></li>
+<li><a class="reference internal" href="#experiment-4-think-about-cost">Experiment 4: Think about cost</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-mistakes-when-studying-slam">Common mistakes when studying SLAM</a></li>
+<li><a class="reference internal" href="#what-this-chapter-is-really-teaching">What this chapter is really teaching</a></li>
 </ul>
 </li>
 </ul>

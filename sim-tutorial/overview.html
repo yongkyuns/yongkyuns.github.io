@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Blog" href="blog/index.html"><link rel="prev" title="Rust Robotics" href="index.html">
+        <link rel="prefetch" href="static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Project Overview - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,16 +254,103 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="project-overview">
 <h1>Project Overview<a class="headerlink" href="#project-overview" title="Link to this heading">¶</a></h1>
-<p>Rust Robotics is organized around four explicit responsibilities.</p>
+<p>Rust Robotics has two practical goals:</p>
+<ol class="arabic simple">
+<li><p>provide a reusable library of robotics algorithms</p></li>
+<li><p>provide interactive simulators that make those algorithms easier to learn,
+test, and compare</p></li>
+</ol>
+<p>The project is meant to stay technically straightforward. It is not trying to
+be a framework for its own sake, and the documentation should not require the
+reader to understand repository structure before learning the actual robotics
+content.</p>
+<section id="what-this-site-is-for">
+<h2>What this site is for<a class="headerlink" href="#what-this-site-is-for" title="Link to this heading">¶</a></h2>
+<p>This documentation is written to be useful to both:</p>
+<ul class="simple">
+<li><p>beginners who want clear explanations and intuition</p></li>
+<li><p>experienced engineers who want practical tradeoffs, assumptions, and runtime implications</p></li>
+</ul>
+<p>The main questions the site should answer are:</p>
+<ul class="simple">
+<li><p>what problem does this algorithm solve?</p></li>
+<li><p>what assumptions does it make?</p></li>
+<li><p>where is it used in practice?</p></li>
+<li><p>what are its computational and memory costs?</p></li>
+<li><p>how does it compare to related algorithms?</p></li>
+<li><p>what should you look for in the interactive simulation?</p></li>
+</ul>
+</section>
+<section id="the-two-halves-of-the-project">
+<h2>The two halves of the project<a class="headerlink" href="#the-two-halves-of-the-project" title="Link to this heading">¶</a></h2>
+<section id="algorithms-library">
+<h3>Algorithms library<a class="headerlink" href="#algorithms-library" title="Link to this heading">¶</a></h3>
+<p>The library side of the project collects implementations of:</p>
+<ul class="simple">
+<li><p>control algorithms</p></li>
+<li><p>localization methods</p></li>
+<li><p>planning methods</p></li>
+<li><p>SLAM-related methods</p></li>
+<li><p>robot runtime logic and policy execution support</p></li>
+</ul>
+<p>The point is not only to have working code. The point is to have implementations
+that are portable enough to be used across:</p>
+<ul class="simple">
+<li><p>native runs</p></li>
+<li><p>browser runs</p></li>
+<li><p>interactive demos</p></li>
+<li><p>and, where reasonable, more deployment-oriented environments</p></li>
+</ul>
+</section>
+<section id="interactive-simulation-layer">
+<h3>Interactive simulation layer<a class="headerlink" href="#interactive-simulation-layer" title="Link to this heading">¶</a></h3>
+<p>The simulation side exists because robotics becomes easier to understand when
+you can manipulate the problem directly. Reading equations is important, but
+many ideas only become intuitive when you can see them:</p>
+<ul class="simple">
+<li><p>overshoot and settling in control</p></li>
+<li><p>uncertainty spread in localization</p></li>
+<li><p>search effort in planning</p></li>
+<li><p>drift and correction in SLAM</p></li>
+<li><p>end-to-end policy execution in robot control</p></li>
+</ul>
+<p>Interactivity is a teaching tool, not an afterthought.</p>
+</section>
+</section>
+<section id="how-to-read-the-tutorials">
+<h2>How to read the tutorials<a class="headerlink" href="#how-to-read-the-tutorials" title="Link to this heading">¶</a></h2>
+<p>Each tutorial is intended to answer four layers of questions:</p>
+<ol class="arabic simple">
+<li><p>the problem definition</p></li>
+<li><p>the theory and assumptions</p></li>
+<li><p>the practical tradeoffs</p></li>
+<li><p>the visible behavior in the simulator</p></li>
+</ol>
+<p>That means the tutorials emphasize:</p>
+<ul class="simple">
+<li><p>theory</p></li>
+<li><p>comparison</p></li>
+<li><p>complexity</p></li>
+<li><p>memory use</p></li>
+<li><p>practical applications</p></li>
+<li><p>common mistakes</p></li>
+</ul>
+<p>They deliberately avoid spending too much time on internal project architecture.
+Rustdoc and source comments are better places for crate-level implementation
+details.</p>
+</section>
+<section id="minimal-mental-model-of-the-project">
+<h2>Minimal mental model of the project<a class="headerlink" href="#minimal-mental-model-of-the-project" title="Link to this heading">¶</a></h2>
+<p>The project still has several crates, but for documentation purposes the simpler
+mental model is usually enough:</p>
 <div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
 <div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
 <div class="sd-col sd-d-flex-row docutils">
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm module-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code></div>
-<p class="sd-card-text">Reusable robotics algorithms, robot-framework logic, control models, localization,
-planning, and SLAM.</p>
+Algorithms</div>
+<p class="sd-card-text">Reusable robotics methods and shared runtime logic.</p>
 </div>
 </div>
 </div>
@@ -267,9 +358,8 @@ planning, and SLAM.</p>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm module-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code></div>
-<p class="sd-card-text">Portable DTOs that let policies and training state cross crate boundaries without
-pulling the full runtime with them.</p>
+Training</div>
+<p class="sd-card-text">Learning-oriented policy optimization and model export.</p>
 </div>
 </div>
 </div>
@@ -277,8 +367,8 @@ pulling the full runtime with them.</p>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm module-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code></div>
-<p class="sd-card-text">PPO training runtime, environment rollouts, Burn model ownership, and snapshot export.</p>
+Shared portable data</div>
+<p class="sd-card-text">The small types that move snapshots and metrics between project components.</p>
 </div>
 </div>
 </div>
@@ -286,49 +376,15 @@ pulling the full runtime with them.</p>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm module-card docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
-<code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code></div>
-<p class="sd-card-text">Interactive app shell, simulator orchestration, MuJoCo world ownership, and native/web runtime glue.</p>
+Interactive simulation</div>
+<p class="sd-card-text">Native and web simulator surfaces for learning, testing, and exploration.</p>
 </div>
 </div>
 </div>
 </div>
 </div>
-<section id="the-main-design-rule">
-<h2>The Main Design Rule<a class="headerlink" href="#the-main-design-rule" title="Link to this heading">¶</a></h2>
-<p>The architecture is centered on one boundary:</p>
-<ul class="simple">
-<li><p>the simulator owns the world</p></li>
-<li><p>the algorithm crate owns robotics semantics</p></li>
-<li><p>the training crate owns optimization</p></li>
-<li><p>the core crate owns portable handoff data</p></li>
-</ul>
-<p>That split is what allows the same policy to be trained in one crate, exported
-as a portable snapshot, and executed from both native and web simulator paths.</p>
-</section>
-<section id="why-this-matters">
-<h2>Why this matters<a class="headerlink" href="#why-this-matters" title="Link to this heading">¶</a></h2>
-<p>Without that separation, robotics repos tend to collapse into one large
-application crate where world state, controller semantics, training code, and UI
-assumptions are mixed together. This workspace is trying to avoid that.</p>
-<p>The benefit is not abstraction for its own sake. The benefit is that each layer
-has a more stable job:</p>
-<ul class="simple">
-<li><p>simulation can change its renderer or viewport</p></li>
-<li><p>algorithms can change their internal math or state conventions</p></li>
-<li><p>training can change optimizers or model implementations</p></li>
-<li><p>the handoff between them can stay explicit and testable</p></li>
-</ul>
-</section>
-<section id="documentation-direction">
-<h2>Documentation direction<a class="headerlink" href="#documentation-direction" title="Link to this heading">¶</a></h2>
-<p>This docs site is intended to grow around those boundaries:</p>
-<ul class="simple">
-<li><p>architecture pages for each crate</p></li>
-<li><p>implementation essays for the pendulum path, robot framework, and MuJoCo runtime</p></li>
-<li><p>higher-level onboarding pages that explain how to navigate the repo</p></li>
-</ul>
-<p>The source code and rustdoc already carry detailed implementation comments. This
-site is the narrative layer on top of that.</p>
+<p>For most readers, that is enough context. The core value of the site should be
+the robotics material itself.</p>
 </section>
 </section>
 
@@ -388,9 +444,14 @@ site is the narrative layer on top of that.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Project Overview</a><ul>
-<li><a class="reference internal" href="#the-main-design-rule">The Main Design Rule</a></li>
-<li><a class="reference internal" href="#why-this-matters">Why this matters</a></li>
-<li><a class="reference internal" href="#documentation-direction">Documentation direction</a></li>
+<li><a class="reference internal" href="#what-this-site-is-for">What this site is for</a></li>
+<li><a class="reference internal" href="#the-two-halves-of-the-project">The two halves of the project</a><ul>
+<li><a class="reference internal" href="#algorithms-library">Algorithms library</a></li>
+<li><a class="reference internal" href="#interactive-simulation-layer">Interactive simulation layer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-read-the-tutorials">How to read the tutorials</a></li>
+<li><a class="reference internal" href="#minimal-mental-model-of-the-project">Minimal mental model of the project</a></li>
 </ul>
 </li>
 </ul>

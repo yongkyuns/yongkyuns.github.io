@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Localization Tutorial" href="localization.html"><link rel="prev" title="Tutorials" href="index.html">
+        <link rel="prefetch" href="../static/RustyRobot.png" as="image">
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2025.12.19 -->
         <title>Control Systems Tutorial - Rust Robotics documentation</title>
@@ -11,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=818f2c4b" />
+    <link rel="stylesheet" type="text/css" href="../static/custom.css?v=fa1841b5" />
     
     
 
@@ -183,6 +184,9 @@
     <div class="sidebar-container">
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../static/RustyRobot.png" alt="Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">Rust Robotics documentation</span>
   
@@ -250,9 +254,16 @@
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="control-systems-tutorial">
 <h1>Control Systems Tutorial<a class="headerlink" href="#control-systems-tutorial" title="Link to this heading">¶</a></h1>
-<p>The inverted-pendulum simulator is the control tutorial in this repo. It is
-small enough to derive by hand, but rich enough to compare classical and learned
-controllers under one shared plant.</p>
+<p>The inverted pendulum is one of the classic teaching systems in robotics and
+control because it sits at the right level of difficulty. It is simple enough
+to derive by hand, but difficult enough to expose the central questions of
+modern control:</p>
+<ul class="simple">
+<li><p>how should a controller react to state error?</p></li>
+<li><p>what assumptions are hidden inside a linear model?</p></li>
+<li><p>when does planning outperform fixed feedback?</p></li>
+<li><p>when does a learned policy behave differently from a model-based controller?</p></li>
+</ul>
 <div class="sim-embed-card">
   <iframe
     class="sim-embed-frame"
@@ -261,138 +272,416 @@ controllers under one shared plant.</p>
     title="Rust Robotics control systems simulator"
     loading="lazy"
   ></iframe>
-</div><section id="the-plant">
-<h2>The plant<a class="headerlink" href="#the-plant" title="Link to this heading">¶</a></h2>
-<p>The state is the familiar cart-pole state:</p>
+</div><section id="learning-goals">
+<h2>Learning goals<a class="headerlink" href="#learning-goals" title="Link to this heading">¶</a></h2>
+<p>By the end of this chapter, you should be able to explain:</p>
 <ul class="simple">
-<li><p>cart position <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
-<li><p>cart velocity <code class="docutils literal notranslate"><span class="pre">\dot{x}</span></code></p></li>
-<li><p>pole angle <code class="docutils literal notranslate"><span class="pre">\theta</span></code></p></li>
-<li><p>pole angular velocity <code class="docutils literal notranslate"><span class="pre">\dot{\theta}</span></code></p></li>
+<li><p>why the inverted pendulum is unstable around the upright equilibrium</p></li>
+<li><p>what information PID, LQR, MPC, and PPO use when choosing control</p></li>
+<li><p>what each method costs computationally</p></li>
+<li><p>when a local linear model is adequate and when it becomes misleading</p></li>
+<li><p>how to read oscillation, overshoot, and settling behavior in the live demo</p></li>
 </ul>
-<p>The control input is the horizontal force applied to the cart. Around the
-upright equilibrium, the nonlinear dynamics can be linearized into the standard
-state-space form:</p>
+</section>
+<section id="where-these-algorithms-are-used">
+<h2>Where these algorithms are used<a class="headerlink" href="#where-these-algorithms-are-used" title="Link to this heading">¶</a></h2>
+<p>The inverted pendulum is a teaching system, but the control ideas are widely
+used in real applications:</p>
+<ul class="simple">
+<li><p>PID:
+low-level industrial loops, motors, temperature control, simple balancing systems</p></li>
+<li><p>LQR:
+aerospace control, balancing systems, trajectory stabilization, linearized multivariable regulation</p></li>
+<li><p>MPC:
+autonomous driving, process control, constrained motion systems, energy systems</p></li>
+<li><p>PPO and related RL policies:
+learned control in simulation, locomotion, game-like environments, tasks with difficult hand-modeling</p></li>
+</ul>
+<p>The pendulum matters because it lets these methods be compared under one shared
+plant without hiding the core tradeoffs.</p>
+</section>
+<section id="the-control-problem">
+<h2>The control problem<a class="headerlink" href="#the-control-problem" title="Link to this heading">¶</a></h2>
+<p>The problem is to keep the pole upright while also controlling cart motion. The
+system state is:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
+\mathbf{x} =
+\begin{bmatrix}
+x &amp; \dot{x} &amp; \theta &amp; \dot{\theta}
+\end{bmatrix}^T
+\]</div>
+</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> is cart position</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">\dot{x}</span></code> is cart velocity</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">\theta</span></code> is pole angle</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">\dot{\theta}</span></code> is pole angular velocity</p></li>
+</ul>
+<p>The control input is the horizontal force <code class="docutils literal notranslate"><span class="pre">u</span></code> applied to the cart.</p>
+<p>Two facts make this system educational:</p>
+<ol class="arabic simple">
+<li><p>the upright equilibrium is unstable</p></li>
+<li><p>the state variables are coupled, so correcting the angle affects the cart
+and correcting the cart affects the angle</p></li>
+</ol>
+<p>That coupling is exactly why multivariable control is more interesting than
+single-loop intuition suggests.</p>
+</section>
+<section id="linearization-and-the-local-model">
+<h2>Linearization and the local model<a class="headerlink" href="#linearization-and-the-local-model" title="Link to this heading">¶</a></h2>
+<p>Around the upright equilibrium, the nonlinear dynamics can be linearized into a
+state-space model:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 \dot{\mathbf{x}} = A\mathbf{x} + B\mathbf{u}
 \]</div>
 </div>
-<p>That local linear model is what makes LQR and the terminal-cost approximation
-inside MPC practical for this demo.</p>
+<p>This local model is not the full physics of the pendulum. It is an approximation
+valid near the upright position. That approximation is powerful because it makes
+several important tools practical:</p>
+<ul class="simple">
+<li><p>LQR can solve a quadratic optimal control problem in closed form</p></li>
+<li><p>MPC can optimize over a linear prediction model efficiently</p></li>
+<li><p>stability and tuning intuition become easier to reason about analytically</p></li>
+</ul>
+<p>But it also has a limit: far from the operating point, the nonlinear plant
+matters. In practice, this means:</p>
+<ul class="simple">
+<li><p>small disturbances are usually well described by the linear model</p></li>
+<li><p>large excursions reveal the limitations of linear assumptions</p></li>
+</ul>
+<p>The simulator is useful precisely because you can see the difference.</p>
 </section>
-<section id="controllers-in-this-page">
-<h2>Controllers in this page<a class="headerlink" href="#controllers-in-this-page" title="Link to this heading">¶</a></h2>
-<p>The simulator lets you compare several controllers on the same plant:</p>
+<section id="the-controller-families-in-this-tutorial">
+<h2>The controller families in this tutorial<a class="headerlink" href="#the-controller-families-in-this-tutorial" title="Link to this heading">¶</a></h2>
+<p>The tutorial exposes four control families on the same plant:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">PID</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">LQR</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">MPC</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PPO</span> <span class="pre">Policy</span></code></p></li>
 </ul>
-<p>Each one answers the same question differently: how should force be chosen from
-the current state to keep the pole upright while keeping the cart motion under
-control?</p>
+<p>All of them answer the same question:</p>
+<blockquote>
+<div><p>Given the current state, what force should be applied now?</p>
+</div></blockquote>
+<p>The difference is in how they represent the problem and what they optimize.</p>
 </section>
-<section id="theoretical-derivations">
-<h2>Theoretical derivations<a class="headerlink" href="#theoretical-derivations" title="Link to this heading">¶</a></h2>
-<section id="pid">
-<h3>PID<a class="headerlink" href="#pid" title="Link to this heading">¶</a></h3>
-<p>PID treats control as weighted error feedback:</p>
+<section id="high-level-comparison">
+<h2>High-level comparison<a class="headerlink" href="#high-level-comparison" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Main idea</p></th>
+<th class="head"><p>Best fit</p></th>
+<th class="head"><p>Main limitation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PID</p></td>
+<td><p>correct the observed error directly</p></td>
+<td><p>simple regulation tasks</p></td>
+<td><p>weak handling of strong coupling</p></td>
+</tr>
+<tr class="row-odd"><td><p>LQR</p></td>
+<td><p>compute optimal linear feedback from a model and quadratic cost</p></td>
+<td><p>local stabilization around an operating point</p></td>
+<td><p>depends on linear model validity</p></td>
+</tr>
+<tr class="row-even"><td><p>MPC</p></td>
+<td><p>solve a finite-horizon optimization problem repeatedly</p></td>
+<td><p>constrained or anticipatory control</p></td>
+<td><p>computational cost</p></td>
+</tr>
+<tr class="row-odd"><td><p>PPO</p></td>
+<td><p>learn a policy from interaction data</p></td>
+<td><p>hard-to-model or reward-defined tasks</p></td>
+<td><p>training cost and weaker interpretability</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="pid-error-correction-without-a-system-model">
+<h2>PID: error correction without a system model<a class="headerlink" href="#pid-error-correction-without-a-system-model" title="Link to this heading">¶</a></h2>
+<p>PID is the most familiar controller because it treats the task as error
+correction:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 u(t) = K_p e(t) + K_i \int e(t)\,dt + K_d \frac{de(t)}{dt}
 \]</div>
 </div>
-<p>In discrete time, the implementation approximates the derivative from finite
-differences and accumulates the integral term numerically. PID is useful here as
-a baseline because it is intuitive and tunable, but it does not explicitly
-reason about the coupled multivariable pendulum dynamics.</p>
+<p>In discrete time, the implementation approximates the derivative with finite
+differences and accumulates the integral numerically.</p>
+<section id="what-pid-gets-right">
+<h3>What PID gets right<a class="headerlink" href="#what-pid-gets-right" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>intuitive tuning</p></li>
+<li><p>low computational cost</p></li>
+<li><p>effective on many simple regulation problems</p></li>
+</ul>
 </section>
-<section id="lqr">
-<h3>LQR<a class="headerlink" href="#lqr" title="Link to this heading">¶</a></h3>
-<p>LQR chooses a feedback gain <code class="docutils literal notranslate"><span class="pre">K</span></code> that minimizes a quadratic cost:</p>
+<section id="what-pid-struggles-with-here">
+<h3>What PID struggles with here<a class="headerlink" href="#what-pid-struggles-with-here" title="Link to this heading">¶</a></h3>
+<p>The pendulum is not a one-variable problem. The pole angle, cart position, and
+their velocities are coupled. A PID loop can still work as a baseline, but it
+does not naturally encode that coupling in an optimal way.</p>
+</section>
+<section id="cost-profile">
+<h3>Cost profile<a class="headerlink" href="#cost-profile" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>time per update: constant, very small</p></li>
+<li><p>memory: constant</p></li>
+<li><p>tuning burden: potentially high, because gains are hand-chosen</p></li>
+</ul>
+</section>
+</section>
+<section id="lqr-optimal-linear-feedback">
+<h2>LQR: optimal linear feedback<a class="headerlink" href="#lqr-optimal-linear-feedback" title="Link to this heading">¶</a></h2>
+<p>LQR starts from the linearized model and chooses a feedback gain that minimizes
+a long-horizon quadratic cost:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 J = \sum_{k=0}^{\infty} \left(x_k^T Q x_k + u_k^T R u_k\right)
 \]</div>
 </div>
-<p>The solution comes from the Riccati equation. Once the stabilizing matrix <code class="docutils literal notranslate"><span class="pre">P</span></code> is
-found, the optimal linear feedback is:</p>
+<p>The matrices <code class="docutils literal notranslate"><span class="pre">Q</span></code> and <code class="docutils literal notranslate"><span class="pre">R</span></code> encode what should be expensive:</p>
+<ul class="simple">
+<li><p>large state errors</p></li>
+<li><p>large control effort</p></li>
+</ul>
+<p>The solution comes from the discrete Riccati equation. Once the stabilizing
+matrix <code class="docutils literal notranslate"><span class="pre">P</span></code> is found, the controller is:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 u_k = -K x_k
 \]</div>
 </div>
-<p>with <code class="docutils literal notranslate"><span class="pre">K</span></code> derived from <code class="docutils literal notranslate"><span class="pre">A</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">Q</span></code>, <code class="docutils literal notranslate"><span class="pre">R</span></code>, and <code class="docutils literal notranslate"><span class="pre">P</span></code>. The important point is that
-LQR does not tune angle and cart motion separately; it optimizes them together
-through the state cost.</p>
+<section id="why-lqr-matters">
+<h3>Why LQR matters<a class="headerlink" href="#why-lqr-matters" title="Link to this heading">¶</a></h3>
+<p>LQR is one of the cleanest examples of good engineering through modeling. Once
+the linear model and cost weights are chosen, the controller follows directly.</p>
+<p>It also illustrates a larger engineering lesson: a good local model can turn a
+hard control problem into a very clean one.</p>
 </section>
-<section id="mpc">
-<h3>MPC<a class="headerlink" href="#mpc" title="Link to this heading">¶</a></h3>
-<p>MPC solves a finite-horizon optimization problem online:</p>
+<section id="id1">
+<h3>Cost profile<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>offline work: solve the Riccati equation</p></li>
+<li><p>online work: one matrix-vector multiply per step</p></li>
+<li><p>memory: store model matrices and feedback gain</p></li>
+</ul>
+<p>That makes LQR extremely attractive when the local model is good enough.</p>
+</section>
+</section>
+<section id="mpc-optimization-at-runtime">
+<h2>MPC: optimization at runtime<a class="headerlink" href="#mpc-optimization-at-runtime" title="Link to this heading">¶</a></h2>
+<p>Model predictive control solves a finite-horizon optimization problem at every
+time step:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 \min_{\{x_k, u_k\}} \sum_{k=0}^{N-1} \left(x_k^T Q x_k + u_k^T R u_k\right) + x_N^T P x_N
 \]</div>
 </div>
-<p>subject to the dynamics and any input/state constraints. Only the first control
-action is applied, then the optimization is solved again at the next step.</p>
-<p>That is why MPC typically looks more deliberate: it is explicitly planning a
-short future sequence rather than reacting with one static feedback law.</p>
+<p>subject to dynamics and any relevant constraints.</p>
+<p>Only the first control is applied. Then the horizon shifts and the optimization
+is solved again.</p>
+<section id="why-mpc-often-looks-smoother-or-more-deliberate">
+<h3>Why MPC often looks smoother or more deliberate<a class="headerlink" href="#why-mpc-often-looks-smoother-or-more-deliberate" title="Link to this heading">¶</a></h3>
+<p>Unlike LQR, MPC is not tied to a single static feedback law. It plans a short
+sequence, then re-plans as the state changes. This is especially valuable when:</p>
+<ul class="simple">
+<li><p>constraints matter</p></li>
+<li><p>finite-horizon behavior matters</p></li>
+<li><p>the best immediate action depends strongly on near-future consequences</p></li>
+</ul>
 </section>
-<section id="ppo-policy">
-<h3>PPO policy<a class="headerlink" href="#ppo-policy" title="Link to this heading">¶</a></h3>
-<p>The learned policy replaces an analytical control law with a neural mapping from
-observation to action. Training still optimizes a control objective, but the
-gradient comes from PPO’s clipped surrogate loss instead of a Riccati or QP
-solve.</p>
-<p>Conceptually, PPO is learning a feedback policy:</p>
+<section id="id2">
+<h3>Cost profile<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>online work: solve an optimization problem every step</p></li>
+<li><p>memory: store prediction model, horizon data, and solver state</p></li>
+<li><p>tuning burden: cost weights plus horizon and constraint choices</p></li>
+</ul>
+<p>MPC is usually the most computationally expensive controller in this tutorial.</p>
+</section>
+</section>
+<section id="ppo-policy-learned-feedback">
+<h2>PPO policy: learned feedback<a class="headerlink" href="#ppo-policy-learned-feedback" title="Link to this heading">¶</a></h2>
+<p>The PPO controller replaces an explicit analytical control law with a neural
+policy:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
-u = \pi_{\theta}(o)
+u = \pi_\theta(o)
 \]</div>
 </div>
-<p>where <code class="docutils literal notranslate"><span class="pre">o</span></code> is the observation built by the simulator and <code class="docutils literal notranslate"><span class="pre">\theta</span></code> are the policy
-parameters exported as a portable <code class="docutils literal notranslate"><span class="pre">PolicySnapshot</span></code>.</p>
+<p>where <code class="docutils literal notranslate"><span class="pre">o</span></code> is the observation and <code class="docutils literal notranslate"><span class="pre">\theta</span></code> are learned parameters.</p>
+<p>The important distinction is not simply neural network versus equation. The
+real distinction is that PPO learns from repeated interaction and reward design
+rather than directly from a system model and explicit control objective.</p>
+<section id="id3">
+<h3>Cost profile<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>training cost: high</p></li>
+<li><p>inference cost: usually modest</p></li>
+<li><p>memory: model parameters plus any recurrent or optimizer state during training</p></li>
+</ul>
+<p>Once trained, a policy can be cheap to execute, but the design effort moves from
+model derivation to reward shaping, training setup, and data collection.</p>
 </section>
+</section>
+<section id="practical-comparison-points">
+<h2>Practical comparison points<a class="headerlink" href="#practical-comparison-points" title="Link to this heading">¶</a></h2>
+<section id="interpretability">
+<h3>Interpretability<a class="headerlink" href="#interpretability" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>PID and LQR are highly interpretable</p></li>
+<li><p>MPC is interpretable, but more dependent on optimization setup</p></li>
+<li><p>PPO policies are usually least interpretable</p></li>
+</ul>
+</section>
+<section id="tuning-burden">
+<h3>Tuning burden<a class="headerlink" href="#tuning-burden" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>PID often looks simple but can be tedious to tune well</p></li>
+<li><p>LQR replaces gain tuning with cost design</p></li>
+<li><p>MPC adds horizon and solver choices</p></li>
+<li><p>PPO moves the burden toward reward design, training stability, and data collection</p></li>
+</ul>
+</section>
+<section id="runtime-burden">
+<h3>Runtime burden<a class="headerlink" href="#runtime-burden" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>PID and LQR are usually cheap enough for tight control loops</p></li>
+<li><p>MPC may require careful engineering for real-time performance</p></li>
+<li><p>PPO inference can be cheap, but only after expensive training</p></li>
+</ul>
+</section>
+</section>
+<section id="complexity-and-memory-summary">
+<h2>Complexity and memory summary<a class="headerlink" href="#complexity-and-memory-summary" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Online time cost</p></th>
+<th class="head"><p>Memory cost</p></th>
+<th class="head"><p>Main strength</p></th>
+<th class="head"><p>Main weakness</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PID</p></td>
+<td><p>very low</p></td>
+<td><p>very low</p></td>
+<td><p>simplicity</p></td>
+<td><p>weak handling of coupled dynamics</p></td>
+</tr>
+<tr class="row-odd"><td><p>LQR</p></td>
+<td><p>very low</p></td>
+<td><p>low</p></td>
+<td><p>principled multivariable feedback</p></td>
+<td><p>limited to local linear model</p></td>
+</tr>
+<tr class="row-even"><td><p>MPC</p></td>
+<td><p>high</p></td>
+<td><p>moderate</p></td>
+<td><p>explicit short-horizon optimization</p></td>
+<td><p>runtime cost</p></td>
+</tr>
+<tr class="row-odd"><td><p>PPO</p></td>
+<td><p>moderate at inference, high in training</p></td>
+<td><p>model-dependent</p></td>
+<td><p>flexible learned behavior</p></td>
+<td><p>training burden and weaker interpretability</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="what-to-look-at">
 <h2>What to look at<a class="headerlink" href="#what-to-look-at" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>the cart position and pole angle together, not just one variable in isolation</p></li>
-<li><p>how quickly the controller damps oscillation after a disturbance</p></li>
-<li><p>whether the controller settles smoothly or keeps injecting small corrections</p></li>
-<li><p>how the learned PPO policy behaves relative to the model-based controllers</p></li>
+<li><p>angle stabilization and cart stabilization together</p></li>
+<li><p>overshoot after a disturbance</p></li>
+<li><p>settling time</p></li>
+<li><p>residual oscillation</p></li>
+<li><p>control aggressiveness</p></li>
+<li><p>sensitivity to noise or bad parameter choices</p></li>
 </ul>
+<p>A common mistake is to look only at whether the pole stays up. A good controller
+does more than merely avoid failure. It also balances smoothness, effort, and
+recovery behavior.</p>
 </section>
 <section id="try-this">
 <h2>Try this<a class="headerlink" href="#try-this" title="Link to this heading">¶</a></h2>
+<section id="experiment-1-compare-local-feedback-laws">
+<h3>Experiment 1: Compare local feedback laws<a class="headerlink" href="#experiment-1-compare-local-feedback-laws" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
-<li><p>Start with <code class="docutils literal notranslate"><span class="pre">LQR</span></code> and use it as the baseline for smooth stabilization.</p></li>
-<li><p>Switch to <code class="docutils literal notranslate"><span class="pre">PID</span></code> and change gains until you see overshoot or sluggish recovery.</p></li>
-<li><p>Switch to <code class="docutils literal notranslate"><span class="pre">MPC</span></code> and notice the more deliberate control behavior.</p></li>
-<li><p>Select <code class="docutils literal notranslate"><span class="pre">PPO</span> <span class="pre">Policy</span></code> and compare its recovery pattern to the analytical controllers.</p></li>
-<li><p>Add noise and restart to see which controller is most sensitive to sensing error.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">LQR</span></code> as a baseline.</p></li>
+<li><p>Switch to <code class="docutils literal notranslate"><span class="pre">PID</span></code>.</p></li>
+<li><p>Adjust gains until the response becomes oscillatory or sluggish.</p></li>
+<li><p>Compare the shape of the recovery, not just the final outcome.</p></li>
 </ol>
 </section>
-<section id="implementation-mapping">
-<h2>Implementation mapping<a class="headerlink" href="#implementation-mapping" title="Link to this heading">¶</a></h2>
-<p>The pendulum path is intentionally structured across crates:</p>
+<section id="experiment-2-compare-planning-to-fixed-feedback">
+<h3>Experiment 2: Compare planning to fixed feedback<a class="headerlink" href="#experiment-2-compare-planning-to-fixed-feedback" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Switch from <code class="docutils literal notranslate"><span class="pre">LQR</span></code> to <code class="docutils literal notranslate"><span class="pre">MPC</span></code>.</p></li>
+<li><p>Apply a disturbance or restart from a challenging state.</p></li>
+<li><p>Watch whether the MPC controller appears more anticipatory.</p></li>
+</ol>
+</section>
+<section id="experiment-3-compare-learned-and-model-based-control">
+<h3>Experiment 3: Compare learned and model-based control<a class="headerlink" href="#experiment-3-compare-learned-and-model-based-control" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Select <code class="docutils literal notranslate"><span class="pre">PPO</span> <span class="pre">Policy</span></code>.</p></li>
+<li><p>Compare its corrections to <code class="docutils literal notranslate"><span class="pre">LQR</span></code> and <code class="docutils literal notranslate"><span class="pre">MPC</span></code>.</p></li>
+<li><p>Look for differences in smoothness, aggressiveness, and repeated micro-corrections.</p></li>
+</ol>
+</section>
+<section id="experiment-4-study-robustness">
+<h3>Experiment 4: Study robustness<a class="headerlink" href="#experiment-4-study-robustness" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Add observation noise.</p></li>
+<li><p>Repeat the same experiment across several controllers.</p></li>
+<li><p>Observe which controllers degrade gracefully and which become brittle.</p></li>
+</ol>
+</section>
+</section>
+<section id="common-pitfalls">
+<h2>Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_algo</span></code> owns the classical controller logic</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_train</span></code> owns PPO training</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_core</span></code> owns portable <code class="docutils literal notranslate"><span class="pre">PolicySnapshot</span></code> handoff data</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rust_robotics_sim</span></code> owns the plant, stepping, UI, and controller selection</p></li>
+<li><p>confusing local stability with global stability</p></li>
+<li><p>over-tuning for one initial condition</p></li>
+<li><p>treating low overshoot as the only marker of quality</p></li>
+<li><p>ignoring control effort</p></li>
+<li><p>comparing learned and analytical controllers without considering training cost</p></li>
 </ul>
-<p>So the same plant can be stabilized either by analytical control laws or by a
-policy snapshot exported from training, while the simulator itself stays fixed.</p>
+</section>
+<section id="what-this-chapter-is-really-teaching">
+<h2>What this chapter is really teaching<a class="headerlink" href="#what-this-chapter-is-really-teaching" title="Link to this heading">¶</a></h2>
+<p>The inverted pendulum is not important because pendulums are common industrial
+systems. It is important because it reveals a general lesson:</p>
+<p>different controllers encode different beliefs about the world.</p>
+<ul class="simple">
+<li><p>PID assumes reactive error correction is enough</p></li>
+<li><p>LQR assumes a local linear model is the right abstraction</p></li>
+<li><p>MPC assumes online planning is worth the cost</p></li>
+<li><p>PPO assumes a policy can be learned effectively from interaction</p></li>
+</ul>
+<p>Once you understand those differences here, you can recognize the same ideas in
+larger robotic systems.</p>
 </section>
 </section>
 
@@ -452,18 +741,49 @@ policy snapshot exported from training, while the simulator itself stays fixed.<
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Control Systems Tutorial</a><ul>
-<li><a class="reference internal" href="#the-plant">The plant</a></li>
-<li><a class="reference internal" href="#controllers-in-this-page">Controllers in this page</a></li>
-<li><a class="reference internal" href="#theoretical-derivations">Theoretical derivations</a><ul>
-<li><a class="reference internal" href="#pid">PID</a></li>
-<li><a class="reference internal" href="#lqr">LQR</a></li>
-<li><a class="reference internal" href="#mpc">MPC</a></li>
-<li><a class="reference internal" href="#ppo-policy">PPO policy</a></li>
+<li><a class="reference internal" href="#learning-goals">Learning goals</a></li>
+<li><a class="reference internal" href="#where-these-algorithms-are-used">Where these algorithms are used</a></li>
+<li><a class="reference internal" href="#the-control-problem">The control problem</a></li>
+<li><a class="reference internal" href="#linearization-and-the-local-model">Linearization and the local model</a></li>
+<li><a class="reference internal" href="#the-controller-families-in-this-tutorial">The controller families in this tutorial</a></li>
+<li><a class="reference internal" href="#high-level-comparison">High-level comparison</a></li>
+<li><a class="reference internal" href="#pid-error-correction-without-a-system-model">PID: error correction without a system model</a><ul>
+<li><a class="reference internal" href="#what-pid-gets-right">What PID gets right</a></li>
+<li><a class="reference internal" href="#what-pid-struggles-with-here">What PID struggles with here</a></li>
+<li><a class="reference internal" href="#cost-profile">Cost profile</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#lqr-optimal-linear-feedback">LQR: optimal linear feedback</a><ul>
+<li><a class="reference internal" href="#why-lqr-matters">Why LQR matters</a></li>
+<li><a class="reference internal" href="#id1">Cost profile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mpc-optimization-at-runtime">MPC: optimization at runtime</a><ul>
+<li><a class="reference internal" href="#why-mpc-often-looks-smoother-or-more-deliberate">Why MPC often looks smoother or more deliberate</a></li>
+<li><a class="reference internal" href="#id2">Cost profile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ppo-policy-learned-feedback">PPO policy: learned feedback</a><ul>
+<li><a class="reference internal" href="#id3">Cost profile</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#practical-comparison-points">Practical comparison points</a><ul>
+<li><a class="reference internal" href="#interpretability">Interpretability</a></li>
+<li><a class="reference internal" href="#tuning-burden">Tuning burden</a></li>
+<li><a class="reference internal" href="#runtime-burden">Runtime burden</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#complexity-and-memory-summary">Complexity and memory summary</a></li>
 <li><a class="reference internal" href="#what-to-look-at">What to look at</a></li>
-<li><a class="reference internal" href="#try-this">Try this</a></li>
-<li><a class="reference internal" href="#implementation-mapping">Implementation mapping</a></li>
+<li><a class="reference internal" href="#try-this">Try this</a><ul>
+<li><a class="reference internal" href="#experiment-1-compare-local-feedback-laws">Experiment 1: Compare local feedback laws</a></li>
+<li><a class="reference internal" href="#experiment-2-compare-planning-to-fixed-feedback">Experiment 2: Compare planning to fixed feedback</a></li>
+<li><a class="reference internal" href="#experiment-3-compare-learned-and-model-based-control">Experiment 3: Compare learned and model-based control</a></li>
+<li><a class="reference internal" href="#experiment-4-study-robustness">Experiment 4: Study robustness</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-pitfalls">Common pitfalls</a></li>
+<li><a class="reference internal" href="#what-this-chapter-is-really-teaching">What this chapter is really teaching</a></li>
 </ul>
 </li>
 </ul>

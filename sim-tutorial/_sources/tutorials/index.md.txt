@@ -1,7 +1,14 @@
 # Tutorials
 
-Topic-focused walkthroughs that connect the live simulator to the underlying
-theory, derivations, and implementation boundaries in the repo.
+The tutorial pages are the main content of this site. Each tutorial is intended
+to explain:
+
+- the robotics problem
+- the main algorithms used for that problem
+- where those algorithms are used
+- how those algorithms compare
+- what they cost in compute and memory
+- what to look for in the live simulator
 
 ```{admonition} Running the live embeds
 :class: note-shell
@@ -20,13 +27,31 @@ Typical local workflow:
 3. rebuild this docs site with `./scripts/build_docs_site.sh`
 ```
 
+## Tutorial structure
+
+Each chapter is organized around four layers:
+
+1. the robotics problem itself
+2. the mathematical formulation and key assumptions
+3. the computational tradeoffs such as time complexity, memory use, and runtime behavior
+4. the observable effects in the interactive simulator
+
+That structure matters because robotics learning often breaks down at the gap
+between the equation and the actual behavior. The simulator is there to close
+that gap.
+
+This is deliberate. The goal is to keep the notes useful both as learning
+material and as a practical reference.
+
 ::::{grid} 1 1 2 2
 :gutter: 2
 
 :::{grid-item-card} Control Systems
 :class-card: tutorial-card
 
-Linearization, PID, LQR, MPC, and PPO viewed through the inverted-pendulum demo.
+Linearization, feedback, optimal control, and reinforcement learning viewed
+through an inverted pendulum that is small enough to reason about by hand and
+rich enough to expose meaningful tradeoffs.
 
 {doc}`pendulum`
 :::
@@ -34,7 +59,8 @@ Linearization, PID, LQR, MPC, and PPO viewed through the inverted-pendulum demo.
 :::{grid-item-card} Localization
 :class-card: tutorial-card
 
-Bayesian state estimation, particle weighting, resampling, and drift recovery.
+Bayesian state estimation, particle weighting, resampling, uncertainty
+propagation, and the practical limits of noisy sensing.
 
 {doc}`localization`
 :::
@@ -42,7 +68,8 @@ Bayesian state estimation, particle weighting, resampling, and drift recovery.
 :::{grid-item-card} Path Planning
 :class-card: tutorial-card
 
-Heuristic search, geometric shortcuts, and sampling-based planning in one comparison harness.
+Graph search, heuristics, any-angle shortcuts, and sampling-based planning in a
+single environment where path quality and search effort can be compared side by side.
 
 {doc}`path_planning`
 :::
@@ -50,7 +77,8 @@ Heuristic search, geometric shortcuts, and sampling-based planning in one compar
 :::{grid-item-card} SLAM
 :class-card: tutorial-card
 
-Pose-and-map coupling, covariance growth, and optimization-based correction.
+Joint pose-and-map estimation, covariance coupling, drift accumulation, loop
+closure intuition, and the difference between filter and graph viewpoints.
 
 {doc}`slam`
 :::
@@ -58,17 +86,32 @@ Pose-and-map coupling, covariance growth, and optimization-based correction.
 :::{grid-item-card} Robot Runtime
 :class-card: tutorial-card
 
-Observation building, policy inference, and actuation decode across the MuJoCo runtime boundary.
+An end-to-end view of simulated robot control: observations, actions, policy
+execution, timing, portability, and what changes when an algorithm moves from a
+toy example to a more realistic runtime loop.
 
 {doc}`robot`
 :::
 ::::
 
-## Why tutorials here
+## Suggested order
 
-The rustdoc explains the implementation in-place. These pages connect the math,
-the modeling assumptions, and the visible simulator behavior so a reader can go
-from theory to live system without reconstructing the pipeline from source.
+If you want a structured learning sequence:
+
+1. start with control systems
+2. continue with localization
+3. move to path planning
+4. then study SLAM
+5. finish with the robot tutorial to connect the ideas to a richer runtime
+
+That order roughly follows increasing model complexity and increasing coupling
+between estimation, planning, and control.
+
+## What these tutorials are not
+
+They are not meant to be exhaustive research surveys, and they are not meant to
+mirror every internal UI option in the simulator. The goal is to explain the
+core algorithms clearly and compare them in a practical way.
 
 ```{toctree}
 :maxdepth: 2

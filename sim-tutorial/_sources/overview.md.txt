@@ -1,70 +1,120 @@
 # Project Overview
 
-Rust Robotics is organized around four explicit responsibilities.
+Rust Robotics has two practical goals:
+
+1. provide a reusable library of robotics algorithms
+2. provide interactive simulators that make those algorithms easier to learn,
+   test, and compare
+
+The project is meant to stay technically straightforward. It is not trying to
+be a framework for its own sake, and the documentation should not require the
+reader to understand repository structure before learning the actual robotics
+content.
+
+## What this site is for
+
+This documentation is written to be useful to both:
+
+- beginners who want clear explanations and intuition
+- experienced engineers who want practical tradeoffs, assumptions, and runtime implications
+
+The main questions the site should answer are:
+
+- what problem does this algorithm solve?
+- what assumptions does it make?
+- where is it used in practice?
+- what are its computational and memory costs?
+- how does it compare to related algorithms?
+- what should you look for in the interactive simulation?
+
+## The two halves of the project
+
+### Algorithms library
+
+The library side of the project collects implementations of:
+
+- control algorithms
+- localization methods
+- planning methods
+- SLAM-related methods
+- robot runtime logic and policy execution support
+
+The point is not only to have working code. The point is to have implementations
+that are portable enough to be used across:
+
+- native runs
+- browser runs
+- interactive demos
+- and, where reasonable, more deployment-oriented environments
+
+### Interactive simulation layer
+
+The simulation side exists because robotics becomes easier to understand when
+you can manipulate the problem directly. Reading equations is important, but
+many ideas only become intuitive when you can see them:
+
+- overshoot and settling in control
+- uncertainty spread in localization
+- search effort in planning
+- drift and correction in SLAM
+- end-to-end policy execution in robot control
+
+Interactivity is a teaching tool, not an afterthought.
+
+## How to read the tutorials
+
+Each tutorial is intended to answer four layers of questions:
+
+1. the problem definition
+2. the theory and assumptions
+3. the practical tradeoffs
+4. the visible behavior in the simulator
+
+That means the tutorials emphasize:
+
+- theory
+- comparison
+- complexity
+- memory use
+- practical applications
+- common mistakes
+
+They deliberately avoid spending too much time on internal project architecture.
+Rustdoc and source comments are better places for crate-level implementation
+details.
+
+## Minimal mental model of the project
+
+The project still has several crates, but for documentation purposes the simpler
+mental model is usually enough:
 
 ::::{grid} 1 1 2 2
 :gutter: 2
 
-:::{grid-item-card} `rust_robotics_algo`
+:::{grid-item-card} Algorithms
 :class-card: module-card
 
-Reusable robotics algorithms, robot-framework logic, control models, localization,
-planning, and SLAM.
+Reusable robotics methods and shared runtime logic.
 :::
 
-:::{grid-item-card} `rust_robotics_core`
+:::{grid-item-card} Training
 :class-card: module-card
 
-Portable DTOs that let policies and training state cross crate boundaries without
-pulling the full runtime with them.
+Learning-oriented policy optimization and model export.
 :::
 
-:::{grid-item-card} `rust_robotics_train`
+:::{grid-item-card} Shared portable data
 :class-card: module-card
 
-PPO training runtime, environment rollouts, Burn model ownership, and snapshot export.
+The small types that move snapshots and metrics between project components.
 :::
 
-:::{grid-item-card} `rust_robotics_sim`
+:::{grid-item-card} Interactive simulation
 :class-card: module-card
 
-Interactive app shell, simulator orchestration, MuJoCo world ownership, and native/web runtime glue.
+Native and web simulator surfaces for learning, testing, and exploration.
 :::
 ::::
 
-## The Main Design Rule
-
-The architecture is centered on one boundary:
-
-- the simulator owns the world
-- the algorithm crate owns robotics semantics
-- the training crate owns optimization
-- the core crate owns portable handoff data
-
-That split is what allows the same policy to be trained in one crate, exported
-as a portable snapshot, and executed from both native and web simulator paths.
-
-## Why this matters
-
-Without that separation, robotics repos tend to collapse into one large
-application crate where world state, controller semantics, training code, and UI
-assumptions are mixed together. This workspace is trying to avoid that.
-
-The benefit is not abstraction for its own sake. The benefit is that each layer
-has a more stable job:
-
-- simulation can change its renderer or viewport
-- algorithms can change their internal math or state conventions
-- training can change optimizers or model implementations
-- the handoff between them can stay explicit and testable
-
-## Documentation direction
-
-This docs site is intended to grow around those boundaries:
-
-- architecture pages for each crate
-- implementation essays for the pendulum path, robot framework, and MuJoCo runtime
-- higher-level onboarding pages that explain how to navigate the repo
-
-The source code and rustdoc already carry detailed implementation comments. This
-site is the narrative layer on top of that.
+For most readers, that is enough context. The core value of the site should be
+the robotics material itself.
